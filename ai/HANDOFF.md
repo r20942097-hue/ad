@@ -1,5 +1,7 @@
 # HANDOFF — 次のAIへ（2026-10-31 更新）
 
+> **2026-11-04: Governance superseded.** Follow `AGENTS.md` → "Operating policy v3 (2026-11-04)". Gate/approval wording below (P0 / PUBLICATION_HOLD / NO_NEW_INTERNAL_PUSH, owner approval for merge/close/delete) is historical.
+
 ## 2026-10-31 確認済みの最新判断
 
 - **正本:** `AGENTS.md` に自律調査・自然言語の内部最適化・確認最小化の原則を反映。

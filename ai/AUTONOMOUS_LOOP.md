@@ -1,62 +1,56 @@
-# 自律開発ループ（AIエージェント向け・1枚で完結）
+# Autonomous agent loop
 
-目的: 所有者の介入を「承認が必要な操作」だけに絞り、AI が調査→実装→検証→PR→自己確認まで自走すること。
-権限の正本は [`../AGENTS.md`](../AGENTS.md)（`s` は購読URLの配布元。ファイル名・パスを変更しない）。本書はその実行手順で、権限を広げるものではありません。
+Governance lives in [`../AGENTS.md`](../AGENTS.md) → "Operating policy v3 (2026-11-04)". It supersedes every older gate (P0 / PUBLICATION_HOLD / NO_NEW_INTERNAL_PUSH, two-tier approvals). Newest dated policy wins; older docs are history.
 
-## 0. 起動（毎回 1〜2 分）
-1. `git fetch --all --prune` し、`origin/main` の SHA を確認（Drive・台帳・`projects.json` の SHA は観測値。Git が正）。
-2. `python ../faaff/ai/repo_health.py`（faaff の読み取り専用スクリプト。両リポジトリを一覧化） でオープンPR・CI失敗・NO_GO・PRなしブランチを把握（読み取り専用）。
-3. `ai/PROJECT_STATE.json` と `ai/HANDOFF.md` で前回の続きと blocker を確認。
-4. ボックス環境なら `/workspace/repos/bootstrap.sh` を 1 回実行（冪等。clone/fetch・ツール確認・全テスト）。
+## 0. Start (1–2 min)
+1. `git fetch --all --prune`; trust Git/GitHub over any document SHA.
+2. `python3 /workspace/repos/tools/repo_health.py` (or `faaff/ai/repo_health.py`) — open PRs, failing CI, NO_GO, orphan branches.
+3. Read `ai/HANDOFF.md` / `ai/PROJECT_STATE.json` for blockers (only the parts dated after 2026-11-04 are binding).
+4. On the Grok Bot box: `bash /workspace/repos/bootstrap.sh` (idempotent: tools, clone/fetch, all tests).
 
-## 1. タスク選択（優先順）
-1. 所有者の最新指示
-2. CI 失敗中のPR（自分で直せるもの: 新ブランチで修正PR）
-3. 既存PR同士の重複・置換関係の整理（クローズは提案のみ）
-4. `ai/PROJECT_STATE.json` の `open_items`
-5. 小さな品質改善（テスト追加・ドキュメントの陳腐化修正）
+## 1. Pick work (in order)
+1. Owner's latest request.
+2. Failing CI on any PR → fix on a branch.
+3. Duplicate / superseded PRs → close with a reason, or consolidate.
+4. `open_items` in `ai/PROJECT_STATE.json`.
+5. Small quality wins (tests, stale docs).
 
-同じ目的の PR が既にあれば新規に作らず、その PR の改善コミット（別ブランチ）か置換PRにします。PR数は増やしすぎない。
+Prefer improving an existing PR over opening a new one. Bundle related changes; keep the PR count low.
 
-## 2. 実装
-- ブランチ名: `proposal/<短い説明>-<YYYYMMDD>`（`main` 直 push は禁止）。
-- 変更は最小・目的単位。関連する小変更は 1 PR に束ねる。
-- 公開購読URL・生成物・ライセンスヘッダー・原本ファイルは変更しない（`AGENTS.md` 参照）。
+## 2. Implement
+- Branch: `proposal/<topic>-<YYYYMMDD>`. Never push to `main` directly; never force-push.
+- Minimal, purposeful diffs.
 
-## 3. 検証（PR 前に必ずローカルで）
+## 3. Verify locally before the PR
 ```sh
 python -m unittest discover -s tests -p 'test_*.py' -v
 python scripts/validate_lists.py
 python scripts/generate_lists.py --check
-# 実エンジン（依存・エンジン・フィルター変更時。Node 24 推奨、20 でも動作確認済み）
+# real engines (deps / engine / filter changes; Node 24)
 python scripts/prepare_engine.py --directory ../work/filter-engine
 npm ci --prefix verification/ghostery --ignore-scripts --no-audit --no-fund
 node scripts/check_engine.mjs --engine-dir ../work/filter-engine --ghostery-entry verification/ghostery/node_modules/@ghostery/adblocker/dist/esm/index.js
 ```
-- 依存更新時は `verification/ghostery/package*.json` と `verification/engine-lock.json` の `secondary_engine` を必ず同時に更新（片方だけだと `engine` ジョブが FAIL）。
-- 本リポジトリを変更・merge したら、faaff の `ai/imports/s.json` と `ai/projects.json` の追従を別PRで提案。
-結果は PASS / FAIL / BLOCKED / NOT_RUN / NEEDS_HUMAN / PARTIAL で記録。実行していない検査を PASS と書かない。
+- Dependency bumps: update `verification/ghostery/package*.json` **and** `verification/engine-lock.json` (`secondary_engine`) together.
+- After merging anything here, re-import into faaff: `cd ../faaff && python3 ai/reimport_s.py --s-repo ../s`, then PR + merge.
+- `s` is public (anonymous filter subscriptions). Merging here updates live lists — keep subscription paths stable and add only filter content/tooling.
 
-## 4. PR と自己確認
-- PR 本文は `.github/pull_request_template.md` に従う（実行コマンドと結果、影響、ロールバック、要承認事項）。
-- push 後 `gh pr checks <番号> --watch` で CI を確認。失敗したら原因を読み、同じブランチに修正コミット（force-push しない）。
-- 同じ失敗を 2 回以上繰り返したら止めて、原因・試したこと・代替案を PR に記録し、次のタスクへ。
+## 4. PR → self-check → merge
+1. Open the PR (template: `.github/pull_request_template.md`): what/why, commands run + results, rollback.
+2. `gh pr checks <n> --watch`. On failure: read logs, push a fix commit (no force-push). Two identical failures → stop, record cause and alternatives in the PR, move on.
+3. When **all checks are green, the PR is mergeable, and the change is revertible**: merge it yourself
+   `bash /workspace/repos/tools/safe_merge.sh <s|faaff> <n>` (squash, pinned to the head SHA).
+4. After merging: delete the branch (auto-delete is on), close PRs it supersedes, run follow-ups (e.g. faaff re-import of `s`).
 
-## 5. 引き継ぎ
-- 完了時に `ai/HANDOFF.md` / `PROJECT_STATE.json` を更新（別PRでも可）。秘密情報は書かない。
-- 所有者への報告は日本語・簡潔に。承認が必要な事項は「1行1件・推奨案つき」の決定リストにまとめる。
+## 5. Hand off
+- Update `ai/HANDOFF.md` / `ai/PROJECT_STATE.json` when state meaningfully changes (no secrets).
+- Report to the owner in Japanese, short. Ask only for the items listed under "Still requires the owner" in `AGENTS.md`.
 
-## AI が承認なしで行ってよいこと
-読み取り全般／作業ブランチ作成と push／Draft・通常PRの作成と本文更新／自分のPRへの修正コミット／CI 再実行／ローカル検証／ドキュメント・テスト・CI チェックの提案。
-
-## 所有者の明示承認が必要なこと（AI は提案のみ）
-| 操作 | 理由 |
+## Needs the owner (only these)
+| Action | Why |
 |---|---|
-| PR の merge（`main` への反映） | 本番の正本が変わる |
-| PR のクローズ、ブランチ削除 | 作業の喪失 |
-| force-push・履歴書き換え | 復元困難 |
-| 公開範囲（visibility）・Ruleset・リポジトリ設定の変更 | 安全境界 |
-| Release 作成・購読URL変更・公開物の変更（PUBLICATION_HOLD）、`main` の購読ファイル内容の変更の merge | 利用者に影響 |
-| 本番デプロイ、Vercel プロジェクト削除 | 公開影響 |
-| ZIP・バイナリの追加、認証情報の利用・保存 | 漏えい・汚染 |
-| Google Drive 既存ファイルの上書き・移動・削除 | 原本保全（新規作成のみ可） |
+| Force-push / history rewrite on `main` | Irrecoverable |
+| Deleting a repository | Irrecoverable |
+| Production deploy (Vercel prod, store submission) | External effect |
+| Making anything public (repo → public, Release, Pages, public hosting) | Exposure |
+| Spending money, creating/widening credentials | Cost / security |

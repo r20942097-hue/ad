@@ -17,7 +17,7 @@
 - faaff 取り込み（`ai/imports/s.json`）の追従: 不要 / 別PRで提案
 - ロールバック手順:
 
-## 所有者の承認が必要な事項（なければ「なし」）
+## Owner-only items (force-push/history rewrite, repo deletion, prod deploy, making public, spending) — usually「なし」
 - 
 
-merge・close・削除・Release・公開設定変更は所有者の承認後に行います（`ai/AUTONOMOUS_LOOP.md`）。
+CI 全緑・revert 可能なら AI が自分で squash merge します（`ai/AUTONOMOUS_LOOP.md`）。
