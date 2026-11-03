@@ -39,7 +39,7 @@ These are the owner's personal projects. Nothing needs to be published.
 ### AI agents may do without asking
 - Read anything in the repos, CI, and the shared Drive docs.
 - Create branches, push commits, open/update PRs (never push directly to `main`; `main` changes go through a PR).
-- **Merge their own PRs** (squash) when every check is green, the branch is mergeable, and the change is reversible by a revert. Use `gh pr merge --squash --match-head-commit <sha>` or `/workspace/repos/tools/safe_merge.sh <repo> <pr>`.
+- **Merge their own PRs** (squash) when every check is green, the branch is mergeable, and the change is reversible by a revert. Use `gh pr merge --squash --match-head-commit <sha>` or `/workspace/repos/tools/safe_merge.sh <repo> <pr>`. On the box, `/workspace/repos/tools/ai_task.sh <repo> start <slug>` / `ship "<title>"` runs the whole branch → PR → CI → merge flow; the repo pre-commit hook lives in `.github/hooks/` (see `ai/AUTONOMOUS_LOOP.md`).
 - Close superseded or obsolete PRs with a one-line reason; retarget stacked PRs.
 - Delete branches that are merged, or that were backed up first (git bundle under `/workspace/repos/backups/`).
 - Fix failing CI, update dependencies, CI, docs, templates and tooling.

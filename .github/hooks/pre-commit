@@ -1,0 +1,58 @@
+#!/usr/bin/env bash
+# Repo-tracked pre-commit hook (enabled by: git config core.hooksPath .github/hooks).
+# Fast local guard; CI remains the authority. Skip once with: git commit --no-verify
+set -uo pipefail
+root=$(git rev-parse --show-toplevel) && cd "$root" || exit 1
+export PATH="/workspace/tools/bin:$HOME/.local/bin:$PATH"
+repo=$(basename "$(git config --get remote.origin.url 2>/dev/null)" .git)
+mapfile -t files < <(git diff --cached --name-only --diff-filter=ACMR)
+[ ${#files[@]} -eq 0 ] && exit 0
+fail=0
+err() { echo "pre-commit: BLOCKED: $*" >&2; fail=1; }
+run() { local n=$1; shift; "$@" >/tmp/precommit_$$.log 2>&1 || { err "$n failed"; sed 's/^/  /' /tmp/precommit_$$.log | tail -20 >&2; }; }
+has() { printf '%s\n' "${files[@]}" | grep -qE "$1"; }
+
+# 1. Secrets in staged changes (output redacted).
+if command -v gitleaks >/dev/null; then
+  gitleaks git --staged --no-banner --redact -v -l warn . >/tmp/precommit_$$.log 2>&1 || { err "gitleaks found a possible secret"; grep -E 'Finding|File|Line|RuleID' /tmp/precommit_$$.log | head -20 >&2; }
+else echo "pre-commit: warn: gitleaks not found (CI still scans)" >&2; fi
+
+# 2. Archives and large binaries.
+for f in "${files[@]}"; do
+  case "${f,,}" in *.zip|*.7z|*.rar|*.crx|*.xpi|*.exe|*.dmg|*.tar|*.tgz|*.gz|*.mp4|*.ts|*.sqlite|*.db) err "archive/binary file: $f";; esac
+  size=$(git cat-file -s ":$f" 2>/dev/null || echo 0)
+  [ "$size" -gt 1048576 ] && err "file over 1MB: $f ($size bytes)"
+done
+
+# 3. Public repo s: no personal add-on / RPLAY / StreamHarbor material.
+if [ "$repo" = s ]; then
+  for f in "${files[@]}"; do
+    [[ "$f" == .github/hooks/* ]] && continue
+    echo "$f" | grep -qiE 'rplay|streamharbor|addons_dev|\.user\.js$' && err "personal-only path not allowed in public s: $f"
+  done
+fi
+
+# 4. Workflow lint.
+mapfile -t wf < <(printf '%s\n' "${files[@]}" | grep -E '^\.github/(workflows/.*\.ya?ml|dependabot\.yml)$')
+if [ ${#wf[@]} -gt 0 ]; then
+  command -v yamllint >/dev/null && run yamllint yamllint -d '{extends: relaxed, rules: {line-length: disable}}' "${wf[@]}"
+  mapfile -t wfa < <(printf '%s\n' "${wf[@]}" | grep '^\.github/workflows/')
+  [ ${#wfa[@]} -gt 0 ] && command -v actionlint >/dev/null && run actionlint actionlint "${wfa[@]}"
+fi
+
+# 5. Repo fast checks (run on the working tree) when relevant files change.
+if [ "$repo" = s ]; then
+  if has '(^[^/]+\.txt$|^v2/|^filter-profiles\.json$|^scripts/|^tests/)'; then
+    run validate_lists python3 scripts/validate_lists.py
+    run generate_lists python3 scripts/generate_lists.py --check
+    [ -f scripts/check_subscription_contract.py ] && run subscription_contract python3 scripts/check_subscription_contract.py
+  fi
+  has '^(scripts|tests)/|^filter-profiles\.json$' && run unittest python3 -m unittest discover -s tests -p 'test_*.py'
+elif [ "$repo" = faaff ]; then
+  has '^ai/|^integrations/browser-filters/source/s/' && run check_hub python3 ai/check_hub.py
+  has '\.md$' && [ -f ai/check_docs.py ] && run check_docs python3 ai/check_docs.py
+  has '^ai/.*\.py$' && run ai_tests python3 -m unittest discover -s ai/tests -p 'test_*.py'
+fi
+rm -f /tmp/precommit_$$.log
+[ $fail -eq 0 ] || { echo "pre-commit: fix the above, or bypass once with --no-verify (CI will still check)." >&2; exit 1; }
+exit 0
