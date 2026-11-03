@@ -18,22 +18,25 @@
     }
   },
   "permissions": {
-    "always_allowed": [
-      "read",
-      "create proposal/feature branches",
-      "push to proposal/feature branches",
-      "open draft/normal PRs",
-      "rerun CI",
-      "run local verification"
-    ],
-    "requires_owner_approval": [
-      "merge to main",
-      "delete original branches/files",
-      "visibility/publication changes",
-      "force-push / history rewrite",
-      "production deploy",
-      "add ZIP/binary artifacts"
-    ]
+    "status": "SUPERSEDED 2026-11-04 by AGENTS.md \"Operating policy v3\"",
+    "historical": {
+      "always_allowed": [
+        "read",
+        "create proposal/feature branches",
+        "push to proposal/feature branches",
+        "open draft/normal PRs",
+        "rerun CI",
+        "run local verification"
+      ],
+      "requires_owner_approval": [
+        "merge to main",
+        "delete original branches/files",
+        "visibility/publication changes",
+        "force-push / history rewrite",
+        "production deploy",
+        "add ZIP/binary artifacts"
+      ]
+    }
   },
   "protection": {
     "main_ruleset": "PR必須（承認0）・必須チェック test / engine（Filter list checks）・force-push禁止・削除禁止",
@@ -68,5 +71,6 @@
     "continuation": "News monitoring observes material AI changes; existing development quality audit checks applicability. Neither guarantees automatic memory synchronization or unattended commits.",
     "production_impact": "No release, product runtime, public filter path, subscription URL, deployment, or distribution changed by the governance merge",
     "verification_note": "PR test/engine successful; post-merge docs-only push is excluded from s workflow push paths"
-  }
+  },
+  "governance_current": "AGENTS.md -> Operating policy v3 (2026-11-04); newest dated policy wins"
 }
