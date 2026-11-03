@@ -35,6 +35,11 @@ node scripts/check_engine.mjs --engine-dir ../work/filter-engine --ghostery-entr
 - After merging anything here, re-import into faaff: `cd ../faaff && python3 ai/reimport_s.py --s-repo ../s`, then PR + merge.
 - `s` is public (anonymous filter subscriptions). Merging here updates live lists — keep subscription paths stable and add only filter content/tooling.
 
+## 3b. One-command flow and local hooks (box)
+- `bash /workspace/repos/tools/ai_task.sh <s|faaff> start <slug>` → branch `ai/<YYYYMMDD>-<slug>` from fresh `origin/main`.
+- `bash /workspace/repos/tools/ai_task.sh <s|faaff> ship "<title>"` → commit (noreply author), push, PR, wait for CI, `safe_merge.sh`, delete branch, fast-forward `main`. For `s` it also verifies the raw subscription URLs and opens/merges the faaff re-import PR. `... check` runs the hook on uncommitted changes.
+- Pre-commit hook `.github/hooks/pre-commit` (enabled by `bootstrap.sh` via `git config core.hooksPath .github/hooks`): gitleaks on staged changes, blocks archives/binaries and files >1MB (and RPLAY/StreamHarbor/personal paths in `s`), yamllint/actionlint on changed workflows, plus the repo's fast checks. CI stays the authority.
+
 ## 4. PR → self-check → merge
 1. Open the PR (template: `.github/pull_request_template.md`): what/why, commands run + results, rollback.
 2. `gh pr checks <n> --watch`. On failure: read logs, push a fix commit (no force-push). Two identical failures → stop, record cause and alternatives in the PR, move on.
