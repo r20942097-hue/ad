@@ -5,9 +5,14 @@
   "updated": "2026-11-04",
   "default_branch": "main",
   "heads": {
-    "main_before_governance_pr": "a3bb00a94c2c44ad882a85078a4e3e74730290a2",
-    "note": "最新の main head は `git rev-parse origin/main` で確認してください。この値は本ファイル作成時点の記録です。",
-    "governance_policy_merge_2026_10_31": "c0fd5f57b7050ecd622c936f338d23ff66af3826"
+    "note": "最新の main head は `git rev-parse origin/main` で確認してください。以下は記録値です。",
+    "history_rewrite_2026_11_04": {
+      "old_main": "6827b08f926ee653459ed78162cb2004c08915f0",
+      "new_main": "74e9f27724a889a3a2a1cd2db8e618b631527fc3",
+      "tree": "7ab2dd7b5e8000fb6a8a2a21f29f620137d0f79c (unchanged)"
+    },
+    "main_before_governance_pr": "a6674913504731e6268c9f90cb54b6a0ff9734fc (pre-rewrite a3bb00a)",
+    "governance_policy_merge_2026_10_31": "6886082137964323c9421206d7f42a0303b57951 (pre-rewrite c0fd5f5)"
   },
   "gates": {
     "status": "SUPERSEDED 2026-11-04 by AGENTS.md \"Operating policy v3\"",
@@ -39,13 +44,14 @@
     }
   },
   "protection": {
-    "main_ruleset": "PR必須（承認0）・必須チェック test / engine（Filter list checks）・force-push禁止・削除禁止",
+    "main_ruleset": "Ruleset 'main protection': PR必須（承認0）・必須チェック test / engine（Filter list checks）・non-fast-forward禁止・削除禁止。2026-11-04 の履歴書き換え時のみ一時無効化し、同一設定で復元済み",
     "ci_zip_guard": "Filter list checks の test ジョブで追跡中の *.zip / *.7z を検出すると FAIL"
   },
   "verification_commands": [
     "python -m unittest discover -s tests -p 'test_*.py' -v",
     "python scripts/validate_lists.py",
-    "python scripts/generate_lists.py --check"
+    "python scripts/generate_lists.py --check",
+    "python scripts/check_subscription_contract.py --json  (after #21)"
   ],
   "downstream": {
     "repository": "r20942097-hue/faaff",
@@ -53,21 +59,21 @@
     "sync_rule": "Check the exact faaff/ai/imports/s.json excluded_paths. The current excluded paths include AGENTS.md, CLAUDE.md, ai/HANDOFF.md, and ai/PROJECT_STATE.json; do not generalize to all ai/*."
   },
   "open_items": [
-    "git 履歴に RPLAY_*.zip（約4MB×10）が残存。完全削除には filter-repo + force-push + GitHub Support 依頼が必要（要承認・未実施）",
-    "LICENSE ファイル未配置（ライセンスは各フィルターのヘッダーで宣言）",
-    "has_wiki が有効（未使用と推定・未検証）",
-    "Actions に main に存在しないワークフロー「Validate v2 filters」が登録残り"
+    "2026-11-04: RPLAY_*.zip 10件を git-filter-repo で全ブランチ履歴から削除済み（main 6827b08 -> 74e9f27、ツリー同一）。旧コミット 2a99e89 / dd435a2 等は閉じた/merge済みPRの refs/pull/* 経由で GitHub 上に残存。所有者が GitHub Support へキャッシュ削除を依頼予定（未完了）",
+    "LICENSE ファイル未配置（ライセンスは各フィルターのヘッダーで宣言: v2/* は GPL-3.0-only、その他 CC0-1.0）",
+    "has_wiki / has_projects が有効（未使用と推定）",
+    "Actions に main に無いワークフロー登録が残存: Validate v2 filters, GPT1 workspace preflight, GPT1 Actions lock pilot（2026-11-04 に disable 済み）、Filter Python 3.14/3.15 compatibility（proposal ブランチ由来）"
   ],
   "governance": {
     "authority": "AGENTS.md on current main; re-read exact main/PR HEAD and checks before each change",
     "policy_merge": {
       "pull_request": 15,
-      "commit": "c0fd5f57b7050ecd622c936f338d23ff66af3826",
+      "commit": "6886082137964323c9421206d7f42a0303b57951 (pre-rewrite c0fd5f5)",
       "date_jst": "2026-10-31",
       "scope": "AI instructions only (AGENTS.md)"
     },
     "scope": "Autonomous research, method selection, multilingual research, implementation and tests only within authorized permissions",
-    "approval_gate": "GitHub Ruleset requires 0 code reviews, but repository policy separately requires explicit owner approval for main merges; the 2026-10-31 governance PR merge received direct delegated approval",
+    "approval_gate": "SUPERSEDED 2026-11-04: under Operating policy v3 AI may merge its own green, revertible PRs (tools/safe_merge.sh); owner approval only for force-push/history rewrite on main, repo deletion, production deploys, making anything public, money/credentials",
     "continuation": "News monitoring observes material AI changes; existing development quality audit checks applicability. Neither guarantees automatic memory synchronization or unattended commits.",
     "production_impact": "No release, product runtime, public filter path, subscription URL, deployment, or distribution changed by the governance merge",
     "verification_note": "PR test/engine successful; post-merge docs-only push is excluded from s workflow push paths"
