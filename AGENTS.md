@@ -3,6 +3,8 @@
 AIコーディングエージェント（Codex / Claude / Cursor / Copilot / Grok Bot など）共通の作業指示です。
 `CLAUDE.md`・`.cursor/rules/`・`.github/copilot-instructions.md` はこのファイルを参照するだけの入口です。内容はここに一本化してください。
 
+> **自律開発ループ（手順・承認が必要な操作の一覧）: [`ai/AUTONOMOUS_LOOP.md`](ai/AUTONOMOUS_LOOP.md)** — 毎回ここから始めてください。
+
 ## このリポジトリの役割
 - 広告・追跡ブロック補助フィルターと、日本語本文フォント調整フィルターの**公開配布元（release authority）**です。
 - 購読URLは `https://raw.githubusercontent.com/r20942097-hue/s/main/<ファイル名>` です。利用者が購読中のため、**既存ファイルのパス・ファイル名を変更・削除・移動しないでください**（`v2/` 配下を含む）。

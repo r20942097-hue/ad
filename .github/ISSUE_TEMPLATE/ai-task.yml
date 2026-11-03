@@ -1,0 +1,23 @@
+name: AIタスク
+description: AI エージェントが自律実行できる粒度のタスク
+title: "[AI] "
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: 目的
+      description: 何を達成したいか（短文で可。AI が要件と受け入れ条件に展開します）
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: 受け入れ条件（任意）
+      description: 例）CI が通る／特定のテストが PASS／ドキュメントが更新される
+  - type: dropdown
+    id: approval
+    attributes:
+      label: 承認が必要な操作を含むか
+      options:
+        - 含まない（AI が PR まで自走）
+        - 含む（merge・公開・削除などは提案止まり）
