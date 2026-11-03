@@ -19,9 +19,9 @@
     ]
   },
   "secondary_engine": {
-    "version": "2.20.1",
+    "version": "2.20.3",
     "package": "@ghostery/adblocker",
-    "integrity": "sha512-1ghCrMnWRf/CWQ5PMw7ZxL4W0U390gmko8kPXhwm7zi+4GDOR49JlHVvmCke90E2hCpBIoNdS5jtNlIKalp2Ww==",
-    "tarball": "https://registry.npmjs.org/@ghostery/adblocker/-/adblocker-2.20.1.tgz"
+    "integrity": "sha512-Wxv+RiqfD+xYVij9gkudU6nDb+eqbfu2roDZa0rtqVw2qIm0ICxEnkrsgUyfZw7+L+3PfI2PszHZQeoCkR1CuA==",
+    "tarball": "https://registry.npmjs.org/@ghostery/adblocker/-/adblocker-2.20.3.tgz"
   }
 }
