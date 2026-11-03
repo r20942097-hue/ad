@@ -2,5 +2,8 @@
   "private": true,
   "dependencies": {
     "@adguard/aglint": "3.0.3"
+  },
+  "overrides": {
+    "zod": "4.6.6"
   }
 }
