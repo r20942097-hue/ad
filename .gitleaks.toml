@@ -1,0 +1,21 @@
+# gitleaks config: default ruleset + repo-specific rules.
+# Loaded automatically from the repo root by `gitleaks git .` / `gitleaks dir .`.
+# Rules match by variable name / code shape only; no secret value is stored here.
+title = "default + personal-project secret rules"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "rplay-butter-constant"
+description = "Hard-coded Butter signing key/salt constant (RPLAY client signature); must never be committed"
+regex = '''(?i)\b_?butter_?(?:key|salt)\b\s*[:=]\s*b?["']([^"'\r\n]{8,64})["']'''
+secretGroup = 1
+keywords = ["butter"]
+
+[[rules]]
+id = "webcrypto-raw-literal-key"
+description = "WebCrypto importKey('raw', ...) fed directly from a string literal (hard-coded symmetric key)"
+regex = '''importKey\(\s*["']raw["']\s*,\s*(?:new\s+TextEncoder\(\)|\w+)\.encode\(\s*["']([^"'\r\n]{16,64})["']'''
+secretGroup = 1
+keywords = ["importkey"]

@@ -35,6 +35,16 @@ jobs:
             echo "::error::ZIP/7z archives must not be committed (see AGENTS.md)"
             exit 1
           fi
+      - name: Secret scan of the current tree (gitleaks v8.30.1, sha256-verified, archives 3 levels deep)
+        # .gitleaks.toml = default rules + name-based rules; scans only the checked-out tree.
+        env:
+          GITLEAKS_VERSION: 8.30.1
+          GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+        run: |
+          curl -fsSL -o /tmp/gitleaks.tgz "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  /tmp/gitleaks.tgz" | sha256sum -c -
+          tar xzf /tmp/gitleaks.tgz -C /tmp gitleaks
+          /tmp/gitleaks dir --redact --no-banner --exit-code 1 --max-archive-depth 3 -c .gitleaks.toml .
       - name: Run filter regression tests
         run: python -m unittest discover -s tests -p 'test_*.py' -v
       - name: Protect published subscription paths and license headers

@@ -12,14 +12,16 @@ err() { echo "pre-commit: BLOCKED: $*" >&2; fail=1; }
 run() { local n=$1; shift; "$@" >/tmp/precommit_$$.log 2>&1 || { err "$n failed"; sed 's/^/  /' /tmp/precommit_$$.log | tail -20 >&2; }; }
 has() { printf '%s\n' "${files[@]}" | grep -qE "$1"; }
 
-# 1. Secrets in staged changes (output redacted).
+# 1. Secrets in staged changes (output redacted). Uses the repo's .gitleaks.toml (default rules +
+#    name-based rules such as rplay-butter-constant) and looks inside archives (zip/tar/...) 3 levels deep.
 if command -v gitleaks >/dev/null; then
-  gitleaks git --staged --no-banner --redact -v -l warn . >/tmp/precommit_$$.log 2>&1 || { err "gitleaks found a possible secret"; grep -E 'Finding|File|Line|RuleID' /tmp/precommit_$$.log | head -20 >&2; }
+  glcfg=(); [ -f .gitleaks.toml ] && glcfg=(-c .gitleaks.toml)
+  gitleaks git --staged --no-banner --redact --max-archive-depth 3 "${glcfg[@]}" -v -l warn . >/tmp/precommit_$$.log 2>&1 || { err "gitleaks found a possible secret"; grep -E 'Finding|File|Line|RuleID' /tmp/precommit_$$.log | head -20 >&2; }
 else echo "pre-commit: warn: gitleaks not found (CI still scans)" >&2; fi
 
-# 2. Archives and large binaries.
+# 2. Archives and large binaries (blocked by extension; this is the archive guard, no gitleaks path rule needed).
 for f in "${files[@]}"; do
-  case "${f,,}" in *.zip|*.7z|*.rar|*.crx|*.xpi|*.exe|*.dmg|*.tar|*.tgz|*.gz|*.mp4|*.ts|*.sqlite|*.db) err "archive/binary file: $f";; esac
+  case "${f,,}" in *.zip|*.7z|*.rar|*.crx|*.xpi|*.jar|*.apk|*.bundle|*.exe|*.dmg|*.tar|*.tgz|*.gz|*.xz|*.bz2|*.zst|*.mp4|*.ts|*.sqlite|*.db) err "archive/binary file: $f";; esac
   size=$(git cat-file -s ":$f" 2>/dev/null || echo 0)
   [ "$size" -gt 1048576 ] && err "file over 1MB: $f ($size bytes)"
 done
