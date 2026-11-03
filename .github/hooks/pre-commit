@@ -47,6 +47,12 @@ if [ "$repo" = s ]; then
     run generate_lists python3 scripts/generate_lists.py --check
     [ -f scripts/check_subscription_contract.py ] && run subscription_contract python3 scripts/check_subscription_contract.py
   fi
+  # AGLint (MIT) on changed filter lists only; needs: npm ci --prefix verification/aglint
+  mapfile -t fl < <(printf '%s\n' "${files[@]}" | grep -E '(^[^/]+|^v2/.+)\.txt$')
+  if [ ${#fl[@]} -gt 0 ]; then
+    if [ -x verification/aglint/node_modules/.bin/aglint ]; then run aglint verification/aglint/node_modules/.bin/aglint --no-colors "${fl[@]}"
+    else echo "pre-commit: warn: AGLint not installed (npm ci --prefix verification/aglint); CI still lints" >&2; fi
+  fi
   has '^(scripts|tests)/|^filter-profiles\.json$' && run unittest python3 -m unittest discover -s tests -p 'test_*.py'
 elif [ "$repo" = faaff ]; then
   has '^ai/|^integrations/browser-filters/source/s/' && run check_hub python3 ai/check_hub.py

@@ -7,7 +7,9 @@ updates:
     cooldown:
       default-days: 7
   - package-ecosystem: npm
-    directory: "/verification/ghostery"
+    directories:
+      - "/verification/ghostery"
+      - "/verification/aglint"
     schedule:
       interval: weekly
     cooldown:

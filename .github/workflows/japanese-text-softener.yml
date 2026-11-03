@@ -60,6 +60,10 @@ jobs:
         run: python scripts/prepare_engine.py --directory "$RUNNER_TEMP/filter-engine"
       - name: Install locked optional secondary engine
         run: npm ci --prefix verification/ghostery --ignore-scripts --no-audit --no-fund
+      - name: Install locked AGLint (MIT, filter-list linter)
+        run: npm ci --prefix verification/aglint --ignore-scripts --no-audit --no-fund
+      - name: Lint filter lists with AGLint
+        run: git ls-files -z '*.txt' | xargs -0 verification/aglint/node_modules/.bin/aglint --no-colors
       - name: Check with uBlock Origin and Ghostery engines
         run: node scripts/check_engine.mjs --engine-dir "$RUNNER_TEMP/filter-engine" --ghostery-entry verification/ghostery/node_modules/@ghostery/adblocker/dist/esm/index.js
 
