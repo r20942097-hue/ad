@@ -27,6 +27,8 @@ python scripts/generate_lists.py --check
 python scripts/prepare_engine.py --directory ../work/filter-engine
 npm ci --prefix verification/ghostery --ignore-scripts --no-audit --no-fund
 node scripts/check_engine.mjs --engine-dir ../work/filter-engine --ghostery-entry verification/ghostery/node_modules/@ghostery/adblocker/dist/esm/index.js
+npm ci --prefix verification/aglint --ignore-scripts --no-audit --no-fund
+git ls-files -z '*.txt' | xargs -0 verification/aglint/node_modules/.bin/aglint --no-colors   # AGLint (MIT) syntax lint
 ```
 CI: `.github/workflows/japanese-text-softener.yml`（Filter list checks）。サードパーティActionはフルSHAで固定します。
 
