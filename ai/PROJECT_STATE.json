@@ -2,56 +2,46 @@
   "schema": "project-state/v1",
   "repository": "r20942097-hue/s",
   "role": "ブラウザー用フィルターの公開配布元（release authority）",
-  "updated": "2026-11-04",
+  "updated": "2026-11-12",
   "default_branch": "main",
   "heads": {
-    "note": "最新の main head は `git rev-parse origin/main` で確認してください。以下は記録値です。",
+    "note": "最新の main head は `git rev-parse origin/main` で確認してください。以下は 2026-11-12 時点の記録値です。",
+    "main": "9c15e328b5bd333a9c5530896ed4a1eec1c7cc2e",
     "history_rewrite_2026_11_04": {
       "old_main": "6827b08f926ee653459ed78162cb2004c08915f0",
       "new_main": "74e9f27724a889a3a2a1cd2db8e618b631527fc3",
-      "tree": "7ab2dd7b5e8000fb6a8a2a21f29f620137d0f79c (unchanged)"
-    },
-    "main_before_governance_pr": "a6674913504731e6268c9f90cb54b6a0ff9734fc (pre-rewrite a3bb00a)",
-    "governance_policy_merge_2026_10_31": "6886082137964323c9421206d7f42a0303b57951 (pre-rewrite c0fd5f5)"
-  },
-  "gates": {
-    "status": "SUPERSEDED 2026-11-04 by AGENTS.md \"Operating policy v3\"",
-    "historical": {
-      "P0": "active",
-      "PUBLICATION_HOLD": "active: Release作成・公開範囲変更・購読URL変更は所有者承認まで保留",
-      "NO_NEW_INTERNAL_PUSH": "active: main への直接 push 禁止（作業ブランチへの push と PR 作成は可）"
+      "tree": "7ab2dd7b5e8000fb6a8a2a21f29f620137d0f79c (unchanged)",
+      "note": "Owner-approved rewrite to drop RPLAY_*.zip from history. Do not repeat."
     }
   },
-  "permissions": {
-    "status": "SUPERSEDED 2026-11-04 by AGENTS.md \"Operating policy v3\"",
-    "historical": {
-      "always_allowed": [
-        "read",
-        "create proposal/feature branches",
-        "push to proposal/feature branches",
-        "open draft/normal PRs",
-        "rerun CI",
-        "run local verification"
-      ],
-      "requires_owner_approval": [
-        "merge to main",
-        "delete original branches/files",
-        "visibility/publication changes",
-        "force-push / history rewrite",
-        "production deploy",
-        "add ZIP/binary artifacts"
-      ]
-    }
+  "policy": {
+    "name": "Operating policy v3 (2026-11-04)",
+    "authority": "AGENTS.md; Drive 00_AI運用ルール_v3_2026-11-04",
+    "supersedes": "P0, PUBLICATION_HOLD, NO_NEW_INTERNAL_PUSH, and every two-tier / owner-approval rule dated 2026-10-28 … 2026-11-03. Those names are historical only and must not be enforced or treated as active gates.",
+    "ai_may": [
+      "read repos, CI, and shared Drive docs",
+      "create branches, push commits, open/update PRs (never push directly to main)",
+      "merge own CI-green, mergeable, revertible PRs (tools/safe_merge.sh or ai_task.sh ship)",
+      "close superseded PRs with a reason; delete merged or backed-up branches",
+      "fix CI, update deps, docs, templates, and tooling"
+    ],
+    "owner_only": [
+      "force-push or history rewrite on main",
+      "deleting a repository",
+      "production deploys",
+      "making anything public (repo visibility, Releases, Pages, new public hosting)",
+      "spending money or creating/widening credentials"
+    ]
   },
   "protection": {
-    "main_ruleset": "Ruleset 'main protection': PR必須（承認0）・必須チェック test / engine（Filter list checks）・non-fast-forward禁止・削除禁止。2026-11-04 の履歴書き換え時のみ一時無効化し、同一設定で復元済み",
+    "main_ruleset": "Ruleset 'main protection': PR required (approval count 0), required checks test / engine (Filter list checks), non-fast-forward forbidden, deletion forbidden. Temporarily disabled only for the 2026-11-04 owner-approved history rewrite, then restored.",
     "ci_zip_guard": "Filter list checks の test ジョブで追跡中の *.zip / *.7z を検出すると FAIL"
   },
   "verification_commands": [
     "python -m unittest discover -s tests -p 'test_*.py' -v",
     "python scripts/validate_lists.py",
     "python scripts/generate_lists.py --check",
-    "python scripts/check_subscription_contract.py --json  (after #21)"
+    "python scripts/check_subscription_contract.py --json"
   ],
   "downstream": {
     "repository": "r20942097-hue/faaff",
@@ -59,24 +49,10 @@
     "sync_rule": "Check the exact faaff/ai/imports/s.json excluded_paths. The current excluded paths include AGENTS.md, CLAUDE.md, ai/HANDOFF.md, and ai/PROJECT_STATE.json; do not generalize to all ai/*."
   },
   "open_items": [
-    "2026-11-04: RPLAY_*.zip 10件を git-filter-repo で全ブランチ履歴から削除済み（main 6827b08 -> 74e9f27、ツリー同一）。旧コミット 2a99e89 / dd435a2 等は閉じた/merge済みPRの refs/pull/* 経由で GitHub 上に残存。所有者が GitHub Support へキャッシュ削除を依頼予定（未完了）",
-    "LICENSE ファイル未配置（ライセンスは各フィルターのヘッダーで宣言: v2/* は GPL-3.0-only、その他 CC0-1.0）",
-    "has_wiki / has_projects が有効（未使用と推定）",
-    "Actions に main に無いワークフロー登録が残存: Validate v2 filters, GPT1 workspace preflight, GPT1 Actions lock pilot（2026-11-04 に disable 済み）、Filter Python 3.14/3.15 compatibility（proposal ブランチ由来）"
+    "2026-11-04: RPLAY_*.zip 10 files were removed from all branch history with git-filter-repo (main 6827b08 -> 74e9f27, tree unchanged). Old commits such as 2a99e89 / dd435a2 can still appear via closed/merged refs/pull/*. Owner still needs to ask GitHub Support to purge the cache (unfinished).",
+    "No root LICENSE file (licenses are declared in each filter header: v2/* GPL-3.0-only, others CC0-1.0).",
+    "has_wiki / has_projects still enabled (probably unused).",
+    "GitHub still lists disabled workflows that are not on main: Validate v2 filters, GPT1 workspace preflight, GPT1 Actions lock pilot, Filter Python 3.14/3.15 compatibility. They were disabled 2026-11-04. The preflight (s#11, closed unmerged) used to fail on the old P0 / PUBLICATION_HOLD / NO_NEW_INTERNAL_PUSH checks; do not re-enable it. Useful subscription-path checks from #11 were salvaged in #21."
   ],
-  "governance": {
-    "authority": "AGENTS.md on current main; re-read exact main/PR HEAD and checks before each change",
-    "policy_merge": {
-      "pull_request": 15,
-      "commit": "6886082137964323c9421206d7f42a0303b57951 (pre-rewrite c0fd5f5)",
-      "date_jst": "2026-10-31",
-      "scope": "AI instructions only (AGENTS.md)"
-    },
-    "scope": "Autonomous research, method selection, multilingual research, implementation and tests only within authorized permissions",
-    "approval_gate": "SUPERSEDED 2026-11-04: under Operating policy v3 AI may merge its own green, revertible PRs (tools/safe_merge.sh); owner approval only for force-push/history rewrite on main, repo deletion, production deploys, making anything public, money/credentials",
-    "continuation": "News monitoring observes material AI changes; existing development quality audit checks applicability. Neither guarantees automatic memory synchronization or unattended commits.",
-    "production_impact": "No release, product runtime, public filter path, subscription URL, deployment, or distribution changed by the governance merge",
-    "verification_note": "PR test/engine successful; post-merge docs-only push is excluded from s workflow push paths"
-  },
-  "governance_current": "AGENTS.md -> Operating policy v3 (2026-11-04); newest dated policy wins"
+  "governance_current": "AGENTS.md -> Operating policy v3 (2026-11-04); newest dated policy wins; no active publication/push gates"
 }

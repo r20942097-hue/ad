@@ -1,32 +1,21 @@
-# HANDOFF — 次のAIへ（2026-10-31 更新）
+# HANDOFF — next agent (2026-11-12)
 
-> **2026-11-04: Governance superseded.** Follow `AGENTS.md` → "Operating policy v3 (2026-11-04)". Gate/approval wording below (P0 / PUBLICATION_HOLD / NO_NEW_INTERNAL_PUSH, owner approval for merge/close/delete) is historical.
+Follow [`AGENTS.md`](../AGENTS.md) → Operating policy v3 (2026-11-04). Drive copy: `00_AI運用ルール_v3_2026-11-04`. There are no standing P0 / PUBLICATION_HOLD / NO_NEW_INTERNAL_PUSH gates. Older wording in git history is not binding.
 
-## 2026-10-31 確認済みの最新判断
+## Current state
 
-- **正本:** `AGENTS.md` に自律調査・自然言語の内部最適化・確認最小化の原則を反映。
-- **正式反映:** PR #15（`AGENTS.md`のみ）が `main` に squash merge。マージコミット `c0fd5f57b7050ecd622c936f338d23ff66af3826`。最新 HEAD は必ず再取得し、 `PROJECT_STATE.json` の `governance` を参照する。
-- **検証:** PR上の必須 `test` と `engine` が SUCCESS。今回は文書のみで、`japanese-text-softener.yml` の push paths 条件に該当しないため、merge後mainでの新規ワークフロー実行はない。これはFAILでもPASSでもなく NOT_RUN。
-- **権限:** RulesetはPR・必須CI・force-push/削除禁止を技術的に強制。レビュー承認0は所有者の明示承認ルールを代替しない。
-- **下流同期:** `faaff/ai/imports/s.json` の `excluded_paths` に `AGENTS.md`、`CLAUDE.md`、`ai/HANDOFF.md`、`ai/PROJECT_STATE.json` が含まれる（他の `ai/*` もすべて除外されるとは限らない）。これらだけの変更では `faaff` のピン留めファイルを更新しない。同期対象ファイルの実差分がある場合のみ別PRで検証する。
-- **次に優先:** 既存テスト・購読URL・生成フィルターを保持しつつ、公開変更とAI運用文書変更を分離。P0/公開HOLDを勝手に解除しない。
+- `s` stays **public** so anonymous `https://raw.githubusercontent.com/r20942097-hue/s/main/<file>` subscriptions keep working. Do not rename, move, or delete those paths (including `v2/`).
+- `main` is `9c15e328b5bd333a9c5530896ed4a1eec1c7cc2e` as of this update (re-read `origin/main` before acting). Recent work already on main includes policy v3 (#20), subscription-contract checks salvaged from closed s#11 (#21), pre-commit / `ai_task.sh` docs (#23), AGLint, gitleaks, and CodeQL (#28).
+- Workflow: `/workspace/repos/tools/ai_task.sh s start <slug>` then `ship "<title>"`. That creates `ai/<YYYYMMDD>-<slug>`, opens a PR, waits for CI, and squash-merges when green and revertible. Never push directly to `main`. Never force-push.
+- After a merge that changes imported files, refresh faaff with `python ai/reimport_s.py --s-repo ../s` (from the faaff clone) and ship that PR. Docs-only paths listed in `faaff/ai/imports/s.json` `excluded_paths` (including this file and `PROJECT_STATE.json`) do not need a re-import.
 
-## Python 3.15.2 compatibility gate (2026-10-31)
+## Do not revive
 
-- `.github/workflows/japanese-text-softener.yml` に **Python 3.15.2 compatibility** を独立ジョブとして追加。既存の Ruleset 必須 `test` / `engine`（Python 3.13）のジョブ名・動作は変更していない。
-- 3.15.2で unittest、リスト構文検証、生成結果の一致チェックを実行。最初の実行は [Actions run 41089156383](https://github.com/r20942097-hue/s/actions/runs/41089156383) で、`test`、`engine`、`Python 3.15.2 compatibility` が SUCCESS。
-- これは標準ライブラリを使うフィルター検証の互換性証拠であり、Windows PCやブラウザー、全Pythonパッケージとの互換性を証明しない。
-- Pythonの更新は提案・CI検証と端末本番環境への適用を分離し、ユーザーPCの既存インストールを自動で置き換えない。
+- Closed s#11 (`ci: GPT1 read-only cross-platform workspace preflight`) and the disabled GitHub workflow **GPT1 workspace preflight**. It asserted the old gates as active. Subscription path/header protection already lives on main via #21.
+- Other disabled leftover workflows not on main: Validate v2 filters, GPT1 Actions lock pilot, Filter Python 3.14/3.15 compatibility.
 
-## 2026-10-28 の履歴（旧記録・新しい判断は上記を優先）
+## Open items
 
-1. まず [`AGENTS.md`](../AGENTS.md) を読む。権限は「常に可」「要承認」の2段階。`main` への直接 push は禁止（Ruleset で技術的にも保護）。
-2. 現在の状態は [`PROJECT_STATE.json`](PROJECT_STATE.json)。最新の `main` head は `git rev-parse origin/main` で確認する。
-3. 2026-10-28 の整理内容:
-   - 閉じたPRのブランチ（`codex/adblock-v2-validation`, `codex/weekly-filter-overlap-review`）を削除（git bundle でバックアップ済み）。
-   - `index.html`（ゲーム、配布物ではない）を `main` から削除。
-   - CI（Filter list checks）に ZIP/7z 混入チェックを追加し、PR では全変更で実行するよう変更。
-   - Dependabot 脆弱性アラートと自動セキュリティ修正を有効化、merge 後のブランチ自動削除を有効化。
-4. 購読URL（`https://raw.githubusercontent.com/r20942097-hue/s/main/<ファイル名>`）のファイル名・パスは変更しない。
-5. 本リポジトリを変更したら、`r20942097-hue/faaff` の `ai/imports/s.json`（固定取り込み）を別PRで更新する。
-6. 未対応: `PROJECT_STATE.json` の `open_items` を参照。
+See `PROJECT_STATE.json` `open_items`. The remaining owner-only item is the GitHub Support cache purge for pre-rewrite ZIP blobs. LICENSE / wiki / leftover disabled workflow registrations are low priority and must not break subscription URLs.
+
+Machine-readable state: [`PROJECT_STATE.json`](PROJECT_STATE.json). Loop: [`AUTONOMOUS_LOOP.md`](AUTONOMOUS_LOOP.md).
