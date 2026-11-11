@@ -1,6 +1,6 @@
 # Handoff — live context only
 
-Operating policy v4 (2026-11-12) is in [../AGENTS.md](../AGENTS.md); no older Drive policy or archived stop gate is a current authorization source.
+General working guidance is in [AGENTS.md](../AGENTS.md). This file records task context only.
 
 ## Current state
 
