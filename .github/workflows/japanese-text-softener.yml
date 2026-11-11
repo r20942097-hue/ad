@@ -70,7 +70,9 @@ jobs:
           active = max(names, key=lambda item: (item[2], int(item[1])))[0]
           assert state["policy"]["name"] == active, "policy authority drift"
           assert "自動同期はありません" not in policy, "stale sync instruction"
-          assert "refresh-pinned-s.yml" in policy, "missing sync automation reference"
+          assert "ai/PROJECT_CONTEXT.md" in policy, "missing separate project-context reference"
+          context = (root / "ai/PROJECT_CONTEXT.md").read_text(encoding="utf-8")
+          assert "refresh-pinned-s.yml" in context, "missing sync fact in project context"
           loop = (root / "ai/AUTONOMOUS_LOOP.md").read_text(encoding="utf-8")
           for name, content in (("ai/HANDOFF.md", handoff),
                                 ("ai/AUTONOMOUS_LOOP.md", loop)):
