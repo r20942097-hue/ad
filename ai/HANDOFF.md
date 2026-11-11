@@ -16,6 +16,6 @@ Follow [`AGENTS.md`](../AGENTS.md) → Operating policy v3 (2026-11-04). Drive c
 
 ## Open items
 
-See `PROJECT_STATE.json` `open_items`. The remaining owner-only item is the GitHub Support cache purge for pre-rewrite ZIP blobs. LICENSE / wiki / leftover disabled workflow registrations are low priority and must not break subscription URLs.
+See `PROJECT_STATE.json` `open_items`. The remaining owner-only assessment is whether the pre-rewrite ZIP content qualifies as sensitive data for a GitHub Support purge. GitHub does not purge non-sensitive content on request; this is NOT GUARANTEED and should not block routine development. LICENSE / wiki / disabled workflow registrations are lower priority and must not disrupt subscription URLs.
 
 Machine-readable state: [`PROJECT_STATE.json`](PROJECT_STATE.json). Loop: [`AUTONOMOUS_LOOP.md`](AUTONOMOUS_LOOP.md).
