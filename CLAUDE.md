@@ -1,5 +1,5 @@
-# CLAUDE.md
+# Claude repository reference
 
-このリポジトリの作業指示はすべて [AGENTS.md](AGENTS.md) にあります。作業前に必ず読み、それに従ってください。このファイルに内容を追加しないでください。
+Shared working guidance: [AGENTS.md](AGENTS.md). No separate rules here.
 
 @AGENTS.md
