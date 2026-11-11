@@ -8,7 +8,7 @@ AIコーディングエージェント（Codex / Claude / Cursor / Copilot / Gro
 ## このリポジトリの役割
 - 広告・追跡ブロック補助フィルターと、日本語本文フォント調整フィルターの配布元です。
 - 購読URLは `https://raw.githubusercontent.com/r20942097-hue/s/main/<ファイル名>` です。購読中のため、**既存ファイルのパス・ファイル名を変更・削除・移動しないでください**（`v2/` 配下を含む）。
-- 統合・開発ハブは [`r20942097-hue/faaff`](https://github.com/r20942097-hue/faaff) です。`faaff/integrations/browser-filters/source/s/` に本リポジトリの**固定コミットの写し**があり、`faaff/ai/imports/s.json` でGit blobハッシュ照合されています。本リポジトリを変更したら、faaff 側で `python ai/reimport_s.py --s-repo ../s` を実行し、取り込み更新PRを作って merge します（自動同期はありません）。
+- 統合・開発ハブは [`r20942097-hue/faaff`](https://github.com/r20942097-hue/faaff) です。`faaff/integrations/browser-filters/source/s/` に本リポジトリの**固定コミットの写し**があり、`faaff/ai/imports/s.json` でGit blobハッシュ照合されています。本リポジトリの取り込み対象に実差分があれば、`faaff` の週次 `refresh-pinned-s.yml` がPRを提案します（自動マージはしません）。急ぐ場合は faaff 側で `python ai/reimport_s.py --s-repo ../s --ref origin/main --check-content` により差分を確認し、変更時のみ再取り込みPRを作成します。`faaff/ai/imports/s.json` の正確な除外パスだけの変更では再取り込みは不要です。
 
 ## 正本と生成物
 - 広告・追跡ネットワークルールの正本は **`filter-profiles.json`** です。
@@ -66,5 +66,5 @@ These are the owner's personal projects. Nothing needs to be published.
 
 ## 詳細な共通ルール・プロジェクト台帳
 - 現在の状態（機械可読）: [`ai/PROJECT_STATE.json`](ai/PROJECT_STATE.json)、次のAIへの引き継ぎ: [`ai/HANDOFF.md`](ai/HANDOFF.md)
-- AI作業環境 統合マスター入口（Google Drive、要アクセス権）: https://docs.google.com/document/d/1ajeph-Kynrpmza3cn06SdKrCYkW-FF3x1ZgRaTzbrkE/edit
+- 現行のAI運用方針（Google Drive、要アクセス権）: https://docs.google.com/document/d/1rnmroegmKD3kG02gk1a5tBHeeL6rkL5jJ7SmMjzqwHA/edit （v3、2026-11-04）。旧v27入口は履歴のみ: https://docs.google.com/document/d/1ajeph-Kynrpmza3cn06SdKrCYkW-FF3x1ZgRaTzbrkE/edit
 - 報告時は、変更パス・実行コマンドと結果・未検証項目・購読URLへの影響・ブランチ/コミットを明記してください。
