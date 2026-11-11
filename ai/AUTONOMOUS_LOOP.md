@@ -1,6 +1,6 @@
 # Autonomous agent loop
 
-Governance lives in [`../AGENTS.md`](../AGENTS.md) → Operating policy v3 (2026-11-04). Newest dated policy wins. Older gate names (P0 / PUBLICATION_HOLD / NO_NEW_INTERNAL_PUSH) are historical and must not be enforced. Prefer `ai/HANDOFF.md` and `ai/PROJECT_STATE.json` dated 2026-11-12 or later over earlier copies of those files.
+Governance lives in [`../AGENTS.md`](../AGENTS.md) → Operating policy v3 (2026-11-04). Newest dated policy wins. Older gate names (P0 / PUBLICATION_HOLD / NO_NEW_INTERNAL_PUSH) are historical and must not be enforced. Git/GitHub provides live branch/CI state; the pinned `s` SHA lives in `faaff/ai/imports/s.json`. Dated handoff and state snapshots never override them.
 
 ## 0. Start (1–2 min)
 1. `git fetch --all --prune`; trust Git/GitHub over any document SHA.
@@ -32,7 +32,7 @@ npm ci --prefix verification/ghostery --ignore-scripts --no-audit --no-fund
 node scripts/check_engine.mjs --engine-dir ../work/filter-engine --ghostery-entry verification/ghostery/node_modules/@ghostery/adblocker/dist/esm/index.js
 ```
 - Dependency bumps: update `verification/ghostery/package*.json` **and** `verification/engine-lock.json` (`secondary_engine`) together.
-- After merging anything here, re-import into faaff: `cd ../faaff && python3 ai/reimport_s.py --s-repo ../s`, then PR + merge.
+- After merging, compare the exact import payload in faaff: `cd ../faaff && python3 ai/reimport_s.py --s-repo ../s --ref origin/main --check-content`. If it reports `CHANGED`, stage a private faaff re-import PR; excluded-only changes are a no-op. Weekly PR proposal automation is a fallback, not an auto-merge.
 - `s` is public (anonymous filter subscriptions). Merging here updates live lists — keep subscription paths stable and add only filter content/tooling.
 
 ## 3b. One-command flow and local hooks (box)
@@ -51,11 +51,6 @@ node scripts/check_engine.mjs --engine-dir ../work/filter-engine --ghostery-entr
 - Update `ai/HANDOFF.md` / `ai/PROJECT_STATE.json` when state meaningfully changes (no secrets).
 - Report to the owner in Japanese, short. Ask only for the items listed under "Still requires the owner" in `AGENTS.md`.
 
-## Needs the owner (only these)
-| Action | Why |
-|---|---|
-| Force-push / history rewrite on `main` | Irrecoverable |
-| Deleting a repository | Irrecoverable |
-| Production deploy (Vercel prod, store submission) | External effect |
-| Making anything public (repo → public, Release, Pages, public hosting) | Exposure |
-| Spending money, creating/widening credentials | Cost / security |
+## Owner-only operations
+
+The exact current approval boundaries are defined in [`AGENTS.md`](../AGENTS.md) → "Still requires the owner". Do not duplicate the permissions list in this handoff.
