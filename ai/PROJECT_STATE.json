@@ -5,33 +5,12 @@
   "updated": "2026-11-12",
   "default_branch": "main",
   "heads": {
-    "note": "最新の main head は `git rev-parse origin/main` で確認してください。以下は 2026-11-12 時点の記録値です。",
-    "main": "9c15e328b5bd333a9c5530896ed4a1eec1c7cc2e",
-    "history_rewrite_2026_11_04": {
-      "old_main": "6827b08f926ee653459ed78162cb2004c08915f0",
-      "new_main": "74e9f27724a889a3a2a1cd2db8e618b631527fc3",
-      "tree": "7ab2dd7b5e8000fb6a8a2a21f29f620137d0f79c (unchanged)",
-      "note": "Owner-approved rewrite to drop RPLAY_*.zip from history. Do not repeat."
-    }
+    "note": "Live s/main SHA and CI must be read from Git/GitHub at use time. This file intentionally stores no current branch SHA."
   },
   "policy": {
     "name": "Operating policy v3 (2026-11-04)",
-    "authority": "AGENTS.md; Drive 00_AI運用ルール_v3_2026-11-04",
-    "supersedes": "P0, PUBLICATION_HOLD, NO_NEW_INTERNAL_PUSH, and every two-tier / owner-approval rule dated 2026-10-28 … 2026-11-03. Those names are historical only and must not be enforced or treated as active gates.",
-    "ai_may": [
-      "read repos, CI, and shared Drive docs",
-      "create branches, push commits, open/update PRs (never push directly to main)",
-      "merge own CI-green, mergeable, revertible PRs (tools/safe_merge.sh or ai_task.sh ship)",
-      "close superseded PRs with a reason; delete merged or backed-up branches",
-      "fix CI, update deps, docs, templates, and tooling"
-    ],
-    "owner_only": [
-      "force-push or history rewrite on main",
-      "deleting a repository",
-      "production deploys",
-      "making anything public (repo visibility, Releases, Pages, new public hosting)",
-      "spending money or creating/widening credentials"
-    ]
+    "authority": "AGENTS.md (sole current authority for permissions); Drive 00_AI運用ルール_v3_2026-11-04. Older policies and archived events are not active gates.",
+    "supersedes": "P0, PUBLICATION_HOLD, NO_NEW_INTERNAL_PUSH, and every two-tier / owner-approval rule dated 2026-10-28 … 2026-11-03. Those names are historical only and must not be enforced or treated as active gates."
   },
   "protection": {
     "main_ruleset": "Ruleset 'main protection': PR required (approval count 0), required checks test / engine (Filter list checks), non-fast-forward forbidden, deletion forbidden. Temporarily disabled only for the 2026-11-04 owner-approved history rewrite, then restored.",
@@ -46,7 +25,7 @@
   "downstream": {
     "repository": "r20942097-hue/faaff",
     "pinned_import": "faaff/ai/imports/s.json（取り込み対象ファイルに実差分がある場合のみ faaff 側で別PRを作成して検証）",
-    "sync_rule": "Check the exact faaff/ai/imports/s.json excluded_paths. The current excluded paths include AGENTS.md, CLAUDE.md, ai/HANDOFF.md, and ai/PROJECT_STATE.json; do not generalize to all ai/*."
+    "sync_rule": "Read the exact excluded_paths from faaff/ai/imports/s.json. The faaff weekly refresh proposes a PR only on imported-content changes and never auto-merges; manual verification with --check-content is available."
   },
   "open_items": [
     "2026-11-04: RPLAY_*.zip 10 files were removed from all branch history with git-filter-repo (main 6827b08 -> 74e9f27, tree unchanged). Old commits such as 2a99e89 / dd435a2 can still appear via closed/merged refs/pull/*. Owner still needs to ask GitHub Support to purge the cache (unfinished).",
@@ -54,5 +33,13 @@
     "has_wiki / has_projects still enabled (probably unused).",
     "GitHub still lists disabled workflows that are not on main: Validate v2 filters, GPT1 workspace preflight, GPT1 Actions lock pilot, Filter Python 3.14/3.15 compatibility. They were disabled 2026-11-04. The preflight (s#11, closed unmerged) used to fail on the old P0 / PUBLICATION_HOLD / NO_NEW_INTERNAL_PUSH checks; do not re-enable it. Useful subscription-path checks from #11 were salvaged in #21."
   ],
-  "governance_current": "AGENTS.md -> Operating policy v3 (2026-11-04); newest dated policy wins; no active publication/push gates"
+  "governance_current": "AGENTS.md -> Operating policy v3 (2026-11-04); newest dated policy wins; no active publication/push gates",
+  "historical_events": {
+    "history_rewrite_2026_11_04": {
+      "old_main": "6827b08f926ee653459ed78162cb2004c08915f0",
+      "new_main": "74e9f27724a889a3a2a1cd2db8e618b631527fc3",
+      "tree": "7ab2dd7b5e8000fb6a8a2a21f29f620137d0f79c (unchanged)",
+      "note": "Owner-approved rewrite to drop RPLAY_*.zip from history. Do not repeat."
+    }
+  }
 }

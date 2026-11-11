@@ -5,9 +5,9 @@ Follow [`AGENTS.md`](../AGENTS.md) → Operating policy v3 (2026-11-04). Drive c
 ## Current state
 
 - `s` stays **public** so anonymous `https://raw.githubusercontent.com/r20942097-hue/s/main/<file>` subscriptions keep working. Do not rename, move, or delete those paths (including `v2/`).
-- `main` is `9c15e328b5bd333a9c5530896ed4a1eec1c7cc2e` as of this update (re-read `origin/main` before acting). Recent work already on main includes policy v3 (#20), subscription-contract checks salvaged from closed s#11 (#21), pre-commit / `ai_task.sh` docs (#23), AGLint, gitleaks, and CodeQL (#28).
+- Read the live `s/main` HEAD and CI state from Git/GitHub (`git rev-parse origin/main` after fetch). Do not duplicate a commit SHA in this handoff or infer current status from historical PR numbers. The published subscription files are protected by `scripts/check_subscription_contract.py`.
 - Workflow: `/workspace/repos/tools/ai_task.sh s start <slug>` then `ship "<title>"`. That creates `ai/<YYYYMMDD>-<slug>`, opens a PR, waits for CI, and squash-merges when green and revertible. Never push directly to `main`. Never force-push.
-- After a merge that changes imported files, refresh faaff with `python ai/reimport_s.py --s-repo ../s` (from the faaff clone) and ship that PR. Docs-only paths listed in `faaff/ai/imports/s.json` `excluded_paths` (including this file and `PROJECT_STATE.json`) do not need a re-import.
+- `faaff` checks the public `s/main` source weekly and proposes a private sync PR only when imported content changes; it never auto-merges. For urgent changes, run `python ai/reimport_s.py --s-repo ../s --ref origin/main --check-content` from the faaff clone, then refresh and submit a PR only if the result is `CHANGED`. Review exact excluded paths in `faaff/ai/imports/s.json`; excluded-only changes do not require an import.
 
 ## Do not revive
 
