@@ -7,15 +7,6 @@
   "heads": {
     "note": "Live s/main SHA and CI must be read from Git/GitHub at use time. This file intentionally stores no current branch SHA."
   },
-  "policy": {
-    "name": "Operating policy v4 (2026-11-12)",
-    "authority": "AGENTS.md is the current in-repository authorization source; live Git/CI is checked at use time, archived Drive v3 and old conversations are historical context",
-    "supersedes": "v3 (2026-11-04) and earlier; obsolete stop gates and fixed language/tool/environment constraints are inactive."
-  },
-  "protection": {
-    "main_ruleset": "Ruleset 'main protection': PR required (approval count 0), required checks test / engine (Filter list checks), non-fast-forward forbidden, deletion forbidden. Temporarily disabled only for the 2026-11-04 owner-approved history rewrite, then restored.",
-    "ci_zip_guard": "Filter list checks の test ジョブで追跡中の *.zip / *.7z を検出すると FAIL"
-  },
   "verification_commands": [
     "python -m unittest discover -s tests -p 'test_*.py' -v",
     "python scripts/validate_lists.py",
@@ -30,7 +21,6 @@
   "open_items": [
     "2026-11-04: RPLAY_*.zip 10 files were removed from branch history via owner-approved git-filter-repo rewrite; old commits may remain reachable from pull-request refs/caches. Do not rewrite history again. Per GitHub's sensitive-data-removal policy, Support does NOT purge non-sensitive content and only considers eligible sensitive content with risk not mitigated by credential rotation. Archive sensitivity has NOT been verified here; Support purge is NOT GUARANTEED. NEEDS_HUMAN only if this issue is in scope: owner to assess whether archives contained qualifying sensitive data and, only if so, gather affected PR count, first changed commit(s) from the filter-repo output, and relevant LFS orphan details before contacting Support. Official policy: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository"
   ],
-  "governance_current": "AGENTS.md -> Operating policy v4 (2026-11-12). Public subscriptions stay stable, old gates are history, no fixed report language or tool paths.",
   "historical_events": {
     "history_rewrite_2026_11_04": {
       "old_main": "6827b08f926ee653459ed78162cb2004c08915f0",
@@ -46,5 +36,10 @@
       ],
       "note": "These are not work orders or current stop gates. Re-evaluate on a relevant change; source history and public subscription paths remain intact."
     }
+  },
+  "repository_checks_observed": {
+    "observed_at": "2026-11-12",
+    "note": "The public main branch had a PR-required ruleset (0 approvals), required test/engine checks, and non-fast-forward/deletion protection. Recheck actual GitHub settings when changing it.",
+    "ci_zip_check": "Filter list test job checks tracked ZIP/7z paths; inspect actual workflow when relevant."
   }
 }
