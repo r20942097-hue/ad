@@ -63,17 +63,47 @@ jobs:
           assert not re.search(r"\b[0-9a-f]{40}\b", current, re.I), "HANDOFF has a stale live SHA"
           policy = (root / "AGENTS.md").read_text(encoding="utf-8")
           names = re.findall(
-              r"^## (Operating policy v\d+ \(\d{4}-\d{2}-\d{2}\))",
+              r"^## (Operating policy v(\d+) \((\d{4}-\d{2}-\d{2})\))",
               policy, re.M,
           )
-          assert names and state["policy"]["name"] == names[-1], "policy authority drift"
+          assert names, "dated Operating policy heading is missing"
+          active = max(names, key=lambda item: (item[2], int(item[1])))[0]
+          assert state["policy"]["name"] == active, "policy authority drift"
           assert "自動同期はありません" not in policy, "stale sync instruction"
           assert "refresh-pinned-s.yml" in policy, "missing sync automation reference"
           loop = (root / "ai/AUTONOMOUS_LOOP.md").read_text(encoding="utf-8")
-          assert not re.search(r"(?i)report(?:ing)? to the owner in Japanese",
-                               policy + "\n" + loop), "obsolete fixed reporting language"
-          assert "No RPLAY recording/download features" not in policy, "obsolete blanket development ban"
-          print("PASS: agent source precedence, policy, task-scoped guidance, and sync instructions")
+          for name, content in (("ai/HANDOFF.md", handoff),
+                                ("ai/AUTONOMOUS_LOOP.md", loop)):
+              assert active in content, f"{name}: stale active policy reference"
+          fixed_language = re.compile(
+              r"(?im)^[ \t]*(?:[-*][ \t]+)?(?:"
+              r"(?:always[ \t]+|must[ \t]+)?report(?:ing)?[ \t]+"
+              r"(?:(?:to[ \t]+the[ \t]+owner[ \t]+)?in[ \t]+Japanese)\b"
+              r"|(?:報告|回答|返信|出力)(?:は|を)[ \t]*日本語(?:で|に)[ \t]*"
+              r"(?:する|行う|統一|固定|必須|[。.!]|$)"
+              r"|日本語で(?:必ず|常に)?[ \t]*(?:報告|回答|返信)"
+              r"(?:する|してください|しなさい|を行う|$)"
+              r")"
+          )
+          blanket_ban = re.compile(
+              r"(?im)^[ \t]*(?:[-*][ \t]+)?(?:"
+              r"No RPLAY recording/download features"
+              r"|RPLAY.{0,24}(?:録画|保存).{0,16}(?:禁止|行わない|実装しない|不可)"
+              r")(?=[ \t。.!、,]|$)"
+          )
+          # Behavioral checks for the regression guard, without injecting
+          # forbidden rules into the actual instruction files.
+          for sample in ("- 報告は日本語で行う", "- 日本語で報告すること",
+                         "- Report to the owner in Japanese"):
+              assert fixed_language.search(sample), "fixed-language guard broken"
+          assert blanket_ban.search("- RPLAYの録画・保存機能は禁止"), "RPLAY ban guard broken"
+          assert not fixed_language.search("- 日本語の文字を検査する"), "spurious language match"
+          for name, content in (("AGENTS.md", policy),
+                                ("ai/AUTONOMOUS_LOOP.md", loop),
+                                ("ai/HANDOFF.md", handoff)):
+              assert not fixed_language.search(content), f"{name}: fixed report language"
+              assert not blanket_ban.search(content), f"{name}: blanket RPLAY feature ban"
+          print("PASS: agent source precedence, policy, bilingual guard, and sync instructions")
           PY
       - name: Protect published subscription paths and license headers
         run: python scripts/check_subscription_contract.py --json
