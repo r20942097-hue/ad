@@ -69,7 +69,11 @@ jobs:
           assert names and state["policy"]["name"] == names[-1], "policy authority drift"
           assert "自動同期はありません" not in policy, "stale sync instruction"
           assert "refresh-pinned-s.yml" in policy, "missing sync automation reference"
-          print("PASS: agent source precedence, policy, and sync instructions")
+          loop = (root / "ai/AUTONOMOUS_LOOP.md").read_text(encoding="utf-8")
+          assert not re.search(r"(?i)report(?:ing)? to the owner in Japanese",
+                               policy + "\n" + loop), "obsolete fixed reporting language"
+          assert "No RPLAY recording/download features" not in policy, "obsolete blanket development ban"
+          print("PASS: agent source precedence, policy, task-scoped guidance, and sync instructions")
           PY
       - name: Protect published subscription paths and license headers
         run: python scripts/check_subscription_contract.py --json

@@ -1,12 +1,12 @@
 # HANDOFF — next agent (2026-11-12)
 
-Follow [`AGENTS.md`](../AGENTS.md) → Operating policy v3 (2026-11-04). Drive copy: `00_AI運用ルール_v3_2026-11-04`. There are no standing P0 / PUBLICATION_HOLD / NO_NEW_INTERNAL_PUSH gates. Older wording in git history is not binding.
+Follow [`AGENTS.md`](../AGENTS.md) → Operating policy v4 (2026-11-12). The v3 Drive copy and older gate names (P0 / PUBLICATION_HOLD / NO_NEW_INTERNAL_PUSH) are historical, not current approval requirements.
 
 ## Current state
 
 - `s` stays **public** so anonymous `https://raw.githubusercontent.com/r20942097-hue/s/main/<file>` subscriptions keep working. Do not rename, move, or delete those paths (including `v2/`).
 - Read the live `s/main` HEAD and CI state from Git/GitHub (`git rev-parse origin/main` after fetch). Do not duplicate a commit SHA in this handoff or infer current status from historical PR numbers. The published subscription files are protected by `scripts/check_subscription_contract.py`.
-- Workflow: `/workspace/repos/tools/ai_task.sh s start <slug>` then `ship "<title>"`. That creates `ai/<YYYYMMDD>-<slug>`, opens a PR, waits for CI, and squash-merges when green and revertible. Never push directly to `main`. Never force-push.
+- Use a fresh branch, scoped PR and relevant verified CI. Box-specific `/workspace/...` scripts are optional, not required. Never push directly to `main` or force-push.
 - `faaff` checks the public `s/main` source weekly and proposes a private sync PR only when imported content changes; it never auto-merges. For urgent changes, run `python ai/reimport_s.py --s-repo ../s --ref origin/main --check-content` from the faaff clone, then refresh and submit a PR only if the result is `CHANGED`. Review exact excluded paths in `faaff/ai/imports/s.json`; excluded-only changes do not require an import.
 
 ## Do not revive
@@ -16,6 +16,6 @@ Follow [`AGENTS.md`](../AGENTS.md) → Operating policy v3 (2026-11-04). Drive c
 
 ## Open items
 
-See `PROJECT_STATE.json` `open_items`. The remaining owner-only assessment is whether the pre-rewrite ZIP content qualifies as sensitive data for a GitHub Support purge. GitHub does not purge non-sensitive content on request; this is NOT GUARANTEED and should not block routine development. LICENSE / wiki / disabled workflow registrations are lower priority and must not disrupt subscription URLs.
+See `PROJECT_STATE.json` `open_items`. The remaining owner-only assessment is whether the pre-rewrite ZIP content qualifies as sensitive data for a GitHub Support purge. GitHub does not purge non-sensitive content on request; this is NOT GUARANTEED and should not block routine development. LICENSE, wiki settings and disabled workflow registrations are archived non-actionable notes, not tasks to execute without a relevant request; subscription URLs remain protected.
 
 Machine-readable state: [`PROJECT_STATE.json`](PROJECT_STATE.json). Loop: [`AUTONOMOUS_LOOP.md`](AUTONOMOUS_LOOP.md).
