@@ -1,6 +1,6 @@
 # Optional engineering loop
 
-Current shared operating guidance: [../AGENTS.md](../AGENTS.md), Operating policy v4 (2026-11-12). This is a workflow suggestion, not an independent policy or an artifact-protection rule.
+[AGENTS.md](../AGENTS.md) contains general guidance. These are optional task steps, not another policy or an automatic work queue.
 
 1. Read the current request and affected source/tests. Consult [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) only for observed technical facts and available checks that relate to the task.
 2. Compare relevant current Git/GitHub state, test evidence and dependencies with the intended change.
