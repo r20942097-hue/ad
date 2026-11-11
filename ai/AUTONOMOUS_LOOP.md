@@ -1,11 +1,11 @@
 # Autonomous agent loop
 
-Governance lives in [`../AGENTS.md`](../AGENTS.md) → "Operating policy v3 (2026-11-04)". It supersedes every older gate (P0 / PUBLICATION_HOLD / NO_NEW_INTERNAL_PUSH, two-tier approvals). Newest dated policy wins; older docs are history.
+Governance lives in [`../AGENTS.md`](../AGENTS.md) → Operating policy v3 (2026-11-04). Newest dated policy wins. Older gate names (P0 / PUBLICATION_HOLD / NO_NEW_INTERNAL_PUSH) are historical and must not be enforced. Prefer `ai/HANDOFF.md` and `ai/PROJECT_STATE.json` dated 2026-11-12 or later over earlier copies of those files.
 
 ## 0. Start (1–2 min)
 1. `git fetch --all --prune`; trust Git/GitHub over any document SHA.
 2. `python3 /workspace/repos/tools/repo_health.py` (or `faaff/ai/repo_health.py`) — open PRs, failing CI, NO_GO, orphan branches.
-3. Read `ai/HANDOFF.md` / `ai/PROJECT_STATE.json` for blockers (only the parts dated after 2026-11-04 are binding).
+3. Read `ai/HANDOFF.md` / `ai/PROJECT_STATE.json` for current blockers. Ignore gate/approval wording older than policy v3.
 4. On the Grok Bot box: `bash /workspace/repos/bootstrap.sh` (idempotent: tools, clone/fetch, all tests).
 
 ## 1. Pick work (in order)
@@ -18,7 +18,7 @@ Governance lives in [`../AGENTS.md`](../AGENTS.md) → "Operating policy v3 (202
 Prefer improving an existing PR over opening a new one. Bundle related changes; keep the PR count low.
 
 ## 2. Implement
-- Branch: `proposal/<topic>-<YYYYMMDD>`. Never push to `main` directly; never force-push.
+- Preferred branch: `bash /workspace/repos/tools/ai_task.sh s start <slug>` → `ai/<YYYYMMDD>-<slug>` from fresh `origin/main`. The older `proposal/<topic>-<YYYYMMDD>` prefix is acceptable only if `ai_task.sh` is unavailable. Never push to `main` directly; never force-push.
 - Minimal, purposeful diffs.
 
 ## 3. Verify locally before the PR
