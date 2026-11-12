@@ -14,10 +14,8 @@ body:
     attributes:
       label: 受け入れ条件（任意）
       description: 例）CI が通る／特定のテストが PASS／ドキュメントが更新される
-  - type: dropdown
-    id: approval
+  - type: textarea
+    id: high_impact
     attributes:
-      label: 承認が必要な操作を含むか
-      options:
-        - 含まない（AI が PR まで自走）
-        - 含む（merge・公開・削除などは提案止まり）
+      label: 高影響な操作・公開への影響（該当する場合のみ）
+      description: 公開設定・本番変更・不可逆操作・費用・認証情報など、実際に影響する事項だけ記載。通常作業の承認条件をここで一律に決めない。
