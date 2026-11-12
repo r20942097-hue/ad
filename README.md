@@ -1,6 +1,12 @@
 # ブラウザー用フィルター
 
-広告・追跡ブロックの補助フィルターと、日本語本文のフォント調整を管理します。広告・追跡一覧は、保守されている一般用途の基本リストと併用してください。
+��告・追跡ブロックの補助フィルターと、日本語本文のフォント調整を管理します。広告・追跡一覧は、保守されている一般用途の基本リストと併用することを前提にしています。
+
+## リポジトリ名と互換性の注意
+
+現在の公開リポジトリは `r20942097-hue/ad` です。
+
+過去の `s`、`faaff` といった名前は履歴上の互換ラベルです。現在の作業やガイドでは、その名称を現行のリポジトリ名として扱わず、必要な場合だけ「旧名・互換履歴」として記載します。生成物や購読の契約は現行の運用に沿い、既存の downstream 互換性を崩さないように維持しています。
 
 ## プロファイル一覧
 
@@ -14,7 +20,7 @@
 | 外部Twitch拡張 | [twitch-custom-optional.txt](twitch-custom-optional.txt) | 追加リソースが必要。既定では無効 |
 | 次世代フィルター | [v2/README.md](v2/README.md) | 候補版。実サイト検証後に評価 |
 
-購読URLは `https://raw.githubusercontent.com/r20942097-hue/s/main/` に各ファイル名を付けたものです。リポジトリの公開状態は確認済みです。20261011.1の更新差分と検証結果は [PR #3](https://github.com/r20942097-hue/s/pull/3) で確認できます。購読先は既定ブランチへの反映後に更新されます。
+購読URLは `https://raw.githubusercontent.com/r20942097-hue/s/main/` に各ファイル名を付けたものです。これは既存の公開契約の維持を優先した互換設定です。リポジトリ名が `ad` に変わっていても、既存の購読者の破壊的変更を避けるため、購読URL自体は履歴上の中核契約を維持しています。
 
 ## 検証
 
@@ -45,7 +51,7 @@ node scripts/check_engine.mjs --engine-dir ../work/filter-engine
 python scripts/audit_upstream.py --cache ../work/upstream-audit --fetch --report ../work/upstream-audit.json
 ```
 
-変更内容は[更新記録](CHANGELOG.md)、検証に使うバージョンは[エンジン固定情報](verification/engine-lock.json)です。公開ページの通信確認や合成画面テストは、認証・動画再生のE2Eとは区別します。
+変更内容は[更新記録](CHANGELOG.md)、検証に使うバージョンは[エンジン固定情報](verification/engine-lock.json)です。公開ページの通信確認や合成画面テストだけで、ログイン・フォーム・動画再生の互換性を保証しません。
 
 ## ライセンス
 
