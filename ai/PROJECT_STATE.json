@@ -40,6 +40,6 @@
   "repository_checks_observed": {
     "observed_at": "2026-11-12",
     "note": "The public main branch had a PR-required ruleset (0 approvals), required test/engine checks, and non-fast-forward/deletion protection. Recheck actual GitHub settings when changing it.",
-    "ci_zip_check": "Filter list test job checks tracked ZIP/7z paths; inspect actual workflow when relevant."
+    "ci_zip_check": "Public filter-source CI rejects tracked ZIP/7z archives as a repository-specific source check; not a general AGENTS.md restriction. Verify actual workflow before relying on this dated observation."
   }
 }
