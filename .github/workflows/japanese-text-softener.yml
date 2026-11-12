@@ -32,7 +32,7 @@ jobs:
       - name: Fail if ZIP/7z archives are tracked
         run: |
           if git ls-files | grep -iE '\.(zip|7z)$'; then
-            echo "::error::ZIP/7z archives must not be committed (see AGENTS.md)"
+            echo "::error::Public filter-source CI disallows tracked ZIP/7z archives; this is a repository-specific check, not a general AGENTS.md rule."
             exit 1
           fi
       - name: Secret scan of the current tree (gitleaks v8.30.1, sha256-verified, archives 3 levels deep)
