@@ -19,9 +19,10 @@ if command -v gitleaks >/dev/null; then
   gitleaks git --staged --no-banner --redact --max-archive-depth 3 "${glcfg[@]}" -v -l warn . >/tmp/precommit_$$.log 2>&1 || { err "gitleaks found a possible secret"; grep -E 'Finding|File|Line|RuleID' /tmp/precommit_$$.log | head -20 >&2; }
 else echo "pre-commit: warn: gitleaks not found (CI still scans)" >&2; fi
 
-# 2. Archives and large binaries (blocked by extension; this is the archive guard, no gitleaks path rule needed).
+# 2. Public filter-source archive and large binary guard. Keep this repository-specific.
+# TypeScript (*.ts) is source code and must not be confused with MPEG transport streams.
 for f in "${files[@]}"; do
-  case "${f,,}" in *.zip|*.7z|*.rar|*.crx|*.xpi|*.jar|*.apk|*.bundle|*.exe|*.dmg|*.tar|*.tgz|*.gz|*.xz|*.bz2|*.zst|*.mp4|*.ts|*.sqlite|*.db) err "archive/binary file: $f";; esac
+  case "${f,,}" in *.zip|*.7z|*.rar|*.crx|*.xpi|*.jar|*.apk|*.bundle|*.exe|*.dmg|*.tar|*.tgz|*.gz|*.xz|*.bz2|*.zst|*.mp4|*.sqlite|*.db) err "archive/binary file: $f";; esac
   size=$(git cat-file -s ":$f" 2>/dev/null || echo 0)
   [ "$size" -gt 1048576 ] && err "file over 1MB: $f ($size bytes)"
 done
