@@ -11,6 +11,7 @@ ROOT = Path(__file__).resolve().parents[1]
 HOOK = ROOT / ".github" / "hooks" / "pre-commit"
 
 
+@unittest.skipUnless(HOOK.is_file(), "local hook is intentionally excluded from the downstream pinned source copy")
 class PublicPreCommitScopeTests(unittest.TestCase):
     def run_staged(self, filename: str, payload: bytes) -> subprocess.CompletedProcess[str]:
         with tempfile.TemporaryDirectory() as tmp:
