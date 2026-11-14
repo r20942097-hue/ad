@@ -23,6 +23,8 @@ def required_license(name: str) -> str:
 
 
 def check_path(root: Path, name: str) -> list[str]:
+    if Path(root).is_symlink():
+        return ["symbolic link or linked ancestor"]
     problems = []
     path = root
     for part in Path(name).parts:

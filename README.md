@@ -1,6 +1,12 @@
 # ブラウザー用フィルター
 
-広告・追跡ブロックの補助フィルターと、日本語本文のフォント調整を管理します。広告・追跡一覧は、保守されている一般用途の基本リストと併用してください。
+広告・追跡ブロック用の補助フィルターと、日本語本文のフォント調整ルールを管理します。広告・追跡一覧は、保守されている一般用途の基本リストと併用する補助リストです。
+
+## リポジトリ名と購読URL
+
+現在の公開リポジトリは [`r20942097-hue/ad`](https://github.com/r20942097-hue/ad) です。過去の `s` および `faaff`（現 `01`）という名称は、移行・取り込み履歴や互換情報にのみ現れます。
+
+購読URLは現在も `https://raw.githubusercontent.com/r20942097-hue/s/main/` に各ファイル名を付けたものを互換契約として継続使用します（既定ブランチへの反映後に更新されます）。リポジトリ名の整理だけを理由にURL、フィルター内の購読メタデータ、生成元、または契約テストを変更しないでください。URL移行が必要な場合は、既存利用者への影響と検証を含む別の移行計画が必要です。
 
 ## プロファイル一覧
 
@@ -14,19 +20,19 @@
 | 外部Twitch拡張 | [twitch-custom-optional.txt](twitch-custom-optional.txt) | 追加リソースが必要。既定では無効 |
 | 次世代フィルター | [v2/README.md](v2/README.md) | 候補版。実サイト検証後に評価 |
 
-購読URLは `https://raw.githubusercontent.com/r20942097-hue/s/main/` に各ファイル名を付けたものです。リポジトリの公開状態は確認済みです。20261011.1の更新差分と検証結果は [PR #3](https://github.com/r20942097-hue/s/pull/3) で確認できます。購読先は既定ブランチへの反映後に更新されます。
-
 ## 検証
 
-Python 3.11以上で実行します。必須の外部Pythonライブラリはありません。
+Python 3.11以上で実行します。必須の外部Pythonライブラリはありません。全オフライン検証は1コマンドで実行できます（個別の詳細コマンドも併記）。
 
 ```sh
+python scripts/verify.py
 python -m unittest discover -s tests -v
 python scripts/validate_lists.py
 python scripts/generate_lists.py --check
+python scripts/check_subscription_contract.py --json
 ```
 
-標準検査はメタデータ、重複、include欠損・循環・範囲外参照、日本語表示ルールの回帰、生成一覧の同期を確認します。
+標準検査はメタデータ、重複、include欠損・循環・範囲外参照、日本語表示ルールの回帰、生成一覧の同期を確認します。購読契約の検査は固定パスとヘッダーの互換性のみを検証し、実際のフィルター動作やエンジン互換性を保証しません。
 
 `filter-profiles.json`を編集して`python scripts/generate_lists.py`で生成します。生成先のtxtを直接編集すると同期検査で失敗します。`ad-ubo.txt`と日本語フォント一覧は手動管理です。
 

@@ -9,7 +9,21 @@ on:
       - 'tests/**'
       - 'filter-profiles.json'
       - 'verification/**'
+      - '.aglintrc.yaml'
+      - '.gitattributes'
+      - '.gitleaks.toml'
+      - '.github/copilot-instructions.md'
+      - '.github/dependabot.yml'
+      - '.github/hooks/**'
+      - '.github/pull_request_template.md'
+      - '.github/ISSUE_TEMPLATE/**'
       - '.github/workflows/japanese-text-softener.yml'
+      - '.cursor/rules/**'
+      - 'AGENTS.md'
+      - 'CHANGELOG.md'
+      - 'CLAUDE.md'
+      - 'README.md'
+      - 'ai/**'
   # PR では全変更で実行する（main の Ruleset 必須チェックのため、パス絞り込みなし）
   pull_request:
 
@@ -46,7 +60,7 @@ jobs:
           tar xzf /tmp/gitleaks.tgz -C /tmp gitleaks
           /tmp/gitleaks dir --redact --no-banner --exit-code 1 --max-archive-depth 3 -c .gitleaks.toml .
       - name: Run filter regression tests
-        run: python -m unittest discover -s tests -p 'test_*.py' -v
+        run: python -m compileall -q scripts tests && python -m unittest discover -s tests -p 'test_*.py' -v && python scripts/verify.py --list >/dev/null && python scripts/validate_lists.py --help >/dev/null && python scripts/generate_lists.py --help >/dev/null && python scripts/check_subscription_contract.py --help >/dev/null && python scripts/prepare_engine.py --help >/dev/null && python scripts/audit_upstream.py --help >/dev/null
       - name: Check live Git source references without policy-version gates
         shell: bash
         run: |
@@ -64,7 +78,7 @@ jobs:
           guidance = (root / "AGENTS.md").read_text(encoding="utf-8")
           loop = (root / "ai/AUTONOMOUS_LOOP.md").read_text(encoding="utf-8")
           assert state.get("schema") == "project-state/v1", "unexpected state format"
-          assert state.get("repository") == "r20942097-hue/s", "unexpected repository"
+          assert state.get("repository") == "r20942097-hue/ad", "unexpected repository"
           assert guidance.strip(), "general guidance is empty"
           assert "AGENTS.md" in handoff and "AGENTS.md" in loop, "missing source-of-truth reference"
           print("PASS: live Git source references and nonduplicated state")
@@ -115,7 +129,7 @@ jobs:
       - name: Show interpreter version
         run: python --version
       - name: Run filter regression tests
-        run: python -m unittest discover -s tests -p 'test_*.py' -v
+        run: python -m compileall -q scripts tests && python -m unittest discover -s tests -p 'test_*.py' -v && python scripts/verify.py --list >/dev/null && python scripts/validate_lists.py --help >/dev/null && python scripts/generate_lists.py --help >/dev/null && python scripts/check_subscription_contract.py --help >/dev/null && python scripts/prepare_engine.py --help >/dev/null && python scripts/audit_upstream.py --help >/dev/null
       - name: Validate all filter lists
         run: python scripts/validate_lists.py
       - name: Verify generated network lists

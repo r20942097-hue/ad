@@ -1,45 +1,28 @@
 {
   "schema": "project-state/v1",
-  "repository": "r20942097-hue/s",
+  "repository": "r20942097-hue/ad",
+  "former_repository": "r20942097-hue/s",
   "role": "ブラウザー用フィルターの公開配布元（release authority）",
-  "updated": "2026-11-12",
+  "updated": "2026-11-15",
   "default_branch": "main",
+  "verify_command": "python scripts/verify.py",
   "heads": {
-    "note": "Live s/main SHA and CI must be read from Git/GitHub at use time. This file intentionally stores no current branch SHA."
+    "note": "Read live ad/main SHA and CI status from Git/GitHub; do not hardcode branch SHAs here."
   },
   "verification_commands": [
+    "python scripts/verify.py",
     "python -m unittest discover -s tests -p 'test_*.py' -v",
     "python scripts/validate_lists.py",
     "python scripts/generate_lists.py --check",
     "python scripts/check_subscription_contract.py --json"
   ],
   "downstream": {
-    "repository": "r20942097-hue/faaff",
-    "pinned_import": "faaff/ai/imports/s.json（取り込み対象ファイルに実差分がある場合のみ faaff 側で別PRを作成して検証）",
-    "sync_rule": "Read the exact excluded_paths from faaff/ai/imports/s.json. The faaff weekly refresh proposes a PR only on imported-content changes and never auto-merges; manual verification with --check-content is available."
+    "repository": "r20942097-hue/01",
+    "former_repository": "r20942097-hue/faaff",
+    "pinned_import": "01/ai/imports/s.json",
+    "sync_rule": "01 refreshes its pinned snapshot on excluded_paths-filtered content changes via PR without auto-merge."
   },
-  "open_items": [
-    "2026-11-04: RPLAY_*.zip 10 files were removed from branch history via owner-approved git-filter-repo rewrite; old commits may remain reachable from pull-request refs/caches. Do not rewrite history again. Per GitHub's sensitive-data-removal policy, Support does NOT purge non-sensitive content and only considers eligible sensitive content with risk not mitigated by credential rotation. Archive sensitivity has NOT been verified here; Support purge is NOT GUARANTEED. NEEDS_HUMAN only if this issue is in scope: owner to assess whether archives contained qualifying sensitive data and, only if so, gather affected PR count, first changed commit(s) from the filter-repo output, and relevant LFS orphan details before contacting Support. Official policy: https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository"
-  ],
-  "historical_events": {
-    "history_rewrite_2026_11_04": {
-      "old_main": "6827b08f926ee653459ed78162cb2004c08915f0",
-      "new_main": "74e9f27724a889a3a2a1cd2db8e618b631527fc3",
-      "tree": "7ab2dd7b5e8000fb6a8a2a21f29f620137d0f79c (unchanged)",
-      "note": "Owner-approved rewrite to drop RPLAY_*.zip from history. Do not repeat."
-    },
-    "context_reset_2026_11_12": {
-      "archived_non_actionable_status": [
-        "No root LICENSE file (licenses are declared in each filter header: v2/* GPL-3.0-only, others CC0-1.0).",
-        "has_wiki / has_projects still enabled (probably unused).",
-        "GitHub still lists disabled workflows that are not on main: Validate v2 filters, GPT1 workspace preflight, GPT1 Actions lock pilot, Filter Python 3.14/3.15 compatibility. They were disabled 2026-11-04. The preflight (s#11, closed unmerged) used to fail on the old P0 / PUBLICATION_HOLD / NO_NEW_INTERNAL_PUSH checks; do not re-enable it. Useful subscription-path checks from #11 were salvaged in #21."
-      ],
-      "note": "These are not work orders or current stop gates. Re-evaluate on a relevant change; source history and public subscription paths remain intact."
-    }
-  },
-  "repository_checks_observed": {
-    "observed_at": "2026-11-12",
-    "note": "The public main branch had a PR-required ruleset (0 approvals), required test/engine checks, and non-fast-forward/deletion protection. Recheck actual GitHub settings when changing it.",
-    "ci_zip_check": "Public filter-source CI rejects tracked ZIP/7z archives as a repository-specific source check; not a general AGENTS.md restriction. Verify actual workflow before relying on this dated observation."
+  "historical_notes": {
+    "main_history_rewrite_2026_11_04": "Owner-approved git-filter-repo rewrite removed historical RPLAY_*.zip objects from main history; do not rewrite history again."
   }
 }

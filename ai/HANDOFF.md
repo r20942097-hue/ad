@@ -1,15 +1,11 @@
-# Handoff — live context only
+# Handoff
 
-General working guidance is in [AGENTS.md](../AGENTS.md). This file records task context only.
+Follow [../AGENTS.md](../AGENTS.md) and [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md).
 
 ## Current state
 
-- Obtain the current branch, commit, PR and CI evidence directly from Git/GitHub; do not copy HEAD SHA into this handoff.
-- Consult [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) for technical facts about this repository's implemented behavior, downstream integrations and test entrypoints. This is not a blanket preservation rule for development artifacts.
-- Use task-appropriate tools and evidence, not a preselected OS, workspace path or model/effort.
+- Read the active branch, HEAD commit, PR, and CI status directly from Git/GitHub (`git status -sb`, `git rev-parse HEAD`); do not store live commit SHAs here.
 
-## Open work
+## Verification
 
-Consult [PROJECT_STATE.json](PROJECT_STATE.json) only for relevant unresolved facts. Historical events and earlier testing results remain contextual, not mandatory gates.
-
-Current execution outline: [AUTONOMOUS_LOOP.md](AUTONOMOUS_LOOP.md).
+- Run `python scripts/verify.py` (and `python scripts/generate_lists.py --write` first when modifying `filter-profiles.json`). Optional loop: [AUTONOMOUS_LOOP.md](AUTONOMOUS_LOOP.md).

@@ -42,6 +42,6 @@ Subscribe to all three lists. `strict.txt` additionally blocks tag managers, ide
 
 ## Status
 
-Candidate. The 20261011.1 update is local and has not been published. The advertising profile has 93 network rules; privacy has 38; Strict has 13. Amazon's broad advertising domain was removed after exception review. Broad New Relic and Sentry SDK domains were isolated in Strict.
+Candidate profile set; not automatically promoted over the root stable lists. Current version and rule counts are recorded in each file header and `filter-profiles.json`. The advertising profile has 93 network rules; privacy has 38; Strict has 13. Amazon's broad advertising domain was removed after exception review. Broad New Relic and Sentry SDK domains were isolated in Strict.
 
 Pinned upstream references and actual uBO/Ghostery engines were checked. Public-page network smoke checks and synthetic DOM tests do not establish login, form or video-playback compatibility. v2 is not automatically promoted over the root stable lists.

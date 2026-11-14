@@ -43,6 +43,15 @@ def extract_snapshot(content, directory, commit):
     return directory / expected
 
 
+def _reject_duplicate_keys(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError(f'duplicate JSON key: {key}')
+        result[key] = value
+    return result
+
+
 def validate_lock(lock):
     if not isinstance(lock, dict) or lock.get('schema') != 'filter-engine-lock/v1':
         raise ValueError('unsupported engine lock')
@@ -66,7 +75,7 @@ def validate_lock(lock):
 
 def prepare(directory, lock):
     validate_lock(lock)
-    if directory.is_symlink() or (directory / 'node').is_symlink():
+    if directory.is_symlink() or (directory / 'node').is_symlink() or (directory / 'sources').is_symlink() or (directory / 'manifest.json').is_symlink():
         raise ValueError('engine directory must not be a symlink')
     directory.mkdir(parents=True, exist_ok=True)
     ubo = lock['ublock']
@@ -78,7 +87,7 @@ def prepare(directory, lock):
     shutil.copytree(source / 'src/lib', node / 'lib', dirs_exist_ok=True)
     shutil.copy2(source / 'platform/nodejs/index.js', node / 'index.js')
     shutil.copy2(source / 'LICENSE.txt', node / 'LICENSE.txt')
-    (node / 'package.json').write_text('{"type":"module"}\n')
+    (node / 'package.json').write_text('{"type":"module"}\n', encoding='utf-8', newline='\n')
     psl = lock['public_suffix']
     download(psl['url'], psl['sha256'], directory / 'public_suffix_list.dat', 2_000_000)
     manifest = {'ublock_commit': ubo['commit'], 'source': str(source.resolve()),
@@ -86,16 +95,18 @@ def prepare(directory, lock):
                 'files': {path.relative_to(directory).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
                           for path in sorted(node.rglob('*')) if path.is_file()}}
     manifest['files']['public_suffix_list.dat'] = psl['sha256']
-    (directory / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n')
+    (directory / 'manifest.json').write_text(json.dumps(manifest, indent=2) + '\n', encoding='utf-8', newline='\n')
     return manifest
 
 
-def main():
+def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--directory', type=Path, required=True)
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     try:
-        manifest = prepare(args.directory.resolve(), json.loads(LOCK.read_text()))
+        if args.directory.is_symlink() or LOCK.is_symlink():
+            raise ValueError('engine directory must not be a symlink')
+        manifest = prepare(args.directory.resolve(), json.loads(LOCK.read_text(encoding='utf-8'), object_pairs_hook=_reject_duplicate_keys))
     except (OSError, ValueError, KeyError, tarfile.TarError) as exc:
         print('ENGINE PREPARATION FAILED:', exc, file=sys.stderr)
         return 1

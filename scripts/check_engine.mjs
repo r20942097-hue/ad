@@ -49,7 +49,7 @@ for (const file of files) {
     const raw = fs.readFileSync(file, 'utf8');
     fingerprints[path.relative(root, file)] = crypto.createHash('sha256').update(raw).digest('hex');
     const networkRules = [];
-    for (const [index, rawLine] of raw.split('\n').entries()) {
+    for (const [index, rawLine] of raw.split(/\r?\n/).entries()) {
         const line = rawLine.trim();
         if (!line || line.startsWith('!') || line.startsWith('[')) continue;
         parser.parse(line);
@@ -133,7 +133,7 @@ const report = { passed: true, engine: 'uBlock Origin', commit: lock.ublock.comm
     resolved_scriptlets: scriptlets, explicitly_optional_external_scriptlets: expectedExternal, lists: cases, files: fingerprints };
 // Execute the actual built-in scriptlet with a synthetic fetch. Syntax/resource
 // checks alone do not catch URL matcher escaping or property-parser delimiters.
-parser.parse(fs.readFileSync(path.join(root, 'ad-ubo.txt'), 'utf8').split('\n').find(line => line.startsWith('twitch.tv##+js(no-fetch-if,')));
+parser.parse(fs.readFileSync(path.join(root, 'ad-ubo.txt'), 'utf8').split(/\r?\n/).find(line => line.startsWith('twitch.tv##+js(no-fetch-if,')));
 const fetchArgs = parser.getScriptletArgs();
 const entry = resourceMap.get(fetchArgs[0]);
 const dependencies = new Map();

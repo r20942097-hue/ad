@@ -79,8 +79,14 @@ class SubscriptionContractTests(unittest.TestCase):
         p.unlink()
         try:
             p.symlink_to(self.root / "tracking.txt")
-        except (OSError, NotImplementedError):
-            self.skipTest("symlink unsupported")
+        except (OSError, NotImplementedError) as exc:
+            if not isinstance(exc, NotImplementedError) and getattr(exc, "winerror", None) != 1314:
+                raise
+            orig_is_symlink = Path.is_symlink
+            linked = {p, p.resolve()}
+            with patch.object(Path, "is_symlink", autospec=True, side_effect=lambda q: q in linked or orig_is_symlink(q)):
+                self.assertIn("symbolic link or linked ancestor", check_path(self.root, "ad.txt"))
+            return
         self.assertIn("symbolic link or linked ancestor", check_path(self.root, "ad.txt"))
 
     def test_linked_v2_ancestor(self):
@@ -89,8 +95,14 @@ class SubscriptionContractTests(unittest.TestCase):
         p.rename(external)
         try:
             p.symlink_to(external, target_is_directory=True)
-        except (OSError, NotImplementedError):
-            self.skipTest("symlink unsupported")
+        except (OSError, NotImplementedError) as exc:
+            if not isinstance(exc, NotImplementedError) and getattr(exc, "winerror", None) != 1314:
+                raise
+            orig_is_symlink = Path.is_symlink
+            linked = {p, p.resolve()}
+            with patch.object(Path, "is_symlink", autospec=True, side_effect=lambda q: q in linked or orig_is_symlink(q)):
+                self.assertIn("symbolic link or linked ancestor", check_path(self.root, "v2/ad.txt"))
+            return
         self.assertIn("symbolic link or linked ancestor", check_path(self.root, "v2/ad.txt"))
 
     def test_duplicate_license(self):
@@ -106,6 +118,11 @@ class SubscriptionContractTests(unittest.TestCase):
         (self.root / "ad.txt").unlink()
         with patch("builtins.print"):
             self.assertEqual(main(["--root", str(self.root)]), 1)
+
+    def test_linked_root_directory(self):
+        orig_is_symlink = Path.is_symlink
+        with patch.object(Path, "is_symlink", autospec=True, side_effect=lambda q: q == self.root or orig_is_symlink(q)):
+            self.assertIn("symbolic link or linked ancestor", check_path(self.root, "ad.txt"))
 
 
 if __name__ == "__main__":

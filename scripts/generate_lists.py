@@ -204,7 +204,7 @@ def generate(data, roots, check=False, dry_run=False):
     # Prepare the full plan before replacing any file, so bad paths cannot cause a partial update.
     for target, content in pending:
         target.parent.mkdir(parents=True, exist_ok=True)
-        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=target.parent, delete=False) as handle:
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', newline='\n', dir=target.parent, delete=False) as handle:
             handle.write(content)
             temporary = Path(handle.name)
         try:
@@ -214,18 +214,20 @@ def generate(data, roots, check=False, dry_run=False):
     return errors
 
 
-def main():
+def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
     parser.add_argument('--dry-run', action='store_true')
     parser.add_argument('--mirror-root', type=Path, help='explicit faaff checkout for compatibility exports')
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     roots = {'s': ROOT}
     if args.mirror_root:
-        if not args.mirror_root.is_dir():
-            parser.error('mirror root must be an existing directory')
+        if args.mirror_root.is_symlink() or not args.mirror_root.is_dir():
+            parser.error('mirror root must be an existing non-symlink directory')
         roots['faaff'] = args.mirror_root.resolve()
     try:
+        if ROOT.is_symlink() or PROFILE_PATH.is_symlink():
+            raise ValueError('symlink profile or root is forbidden')
         data = json.loads(PROFILE_PATH.read_text(encoding='utf-8'), object_pairs_hook=reject_duplicate_keys)
         errors = generate(data, roots, check=args.check, dry_run=args.dry_run)
     except (OSError, ValueError, TypeError) as exc:
@@ -233,7 +235,7 @@ def main():
     for error in errors:
         print('ERROR:', error)
     print('GENERATION FAILED' if errors else 'GENERATION CHECK PASSED' if args.check else 'GENERATION PLAN SHOWN' if args.dry_run else 'GENERATION PASSED')
-    return bool(errors)
+    return 1 if errors else 0
 
 
 if __name__ == '__main__':

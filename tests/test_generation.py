@@ -4,6 +4,7 @@ from pathlib import Path
 import sys
 from tempfile import TemporaryDirectory
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
 import generate_lists as generation
@@ -11,7 +12,7 @@ import generate_lists as generation
 
 class GenerationTests(unittest.TestCase):
     def setUp(self):
-        self.data = json.loads(generation.PROFILE_PATH.read_text())
+        self.data = json.loads(generation.PROFILE_PATH.read_text(encoding='utf-8'))
 
     def test_duplicate_json_keys_are_rejected(self):
         with self.assertRaisesRegex(ValueError, "duplicate JSON key"):
@@ -156,6 +157,7 @@ class GenerationTests(unittest.TestCase):
             root = Path(tmp)
             self.assertEqual(generation.generate(self.data, {'s': root}), [])
             before = (root / 'ad.txt').read_bytes()
+            self.assertNotIn(b'\r', before)
             self.assertEqual(generation.generate(self.data, {'s': root}), [])
             self.assertEqual((root / 'ad.txt').read_bytes(), before)
             self.assertEqual(generation.generate(self.data, {'s': root}, check=True), [])
@@ -187,11 +189,23 @@ class GenerationTests(unittest.TestCase):
     def test_in_tree_symlink_output_is_rejected(self):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
-            (root / 'target.txt').write_text('keep')
-            (root / 'ad.txt').symlink_to('target.txt')
+            (root / 'target.txt').write_text('keep', encoding='utf-8')
+            out = root / 'ad.txt'
+            try:
+                out.symlink_to('target.txt')
+            except (OSError, NotImplementedError) as exc:
+                if not isinstance(exc, NotImplementedError) and getattr(exc, 'winerror', None) != 1314:
+                    raise
+                orig_is_symlink = Path.is_symlink
+                linked = {out, out.resolve()}
+                with patch.object(Path, 'is_symlink', autospec=True, side_effect=lambda p: p in linked or orig_is_symlink(p)):
+                    with self.assertRaises(ValueError):
+                        generation.generate(self.data, {'s': root})
+                self.assertEqual((root / 'target.txt').read_text(encoding='utf-8'), 'keep')
+                return
             with self.assertRaises(ValueError):
                 generation.generate(self.data, {'s': root})
-            self.assertEqual((root / 'target.txt').read_text(), 'keep')
+            self.assertEqual((root / 'target.txt').read_text(encoding='utf-8'), 'keep')
 
     def test_stale_output_is_detected(self):
         with TemporaryDirectory() as tmp:
@@ -200,6 +214,38 @@ class GenerationTests(unittest.TestCase):
             (root / 'ad.txt').write_text('stale')
             errors = generation.generate(self.data, {'s': root}, check=True)
             self.assertTrue(any('stale generated' in error for error in errors))
+
+    def test_main_rejects_symlinked_mirror_root_and_profile(self):
+        import contextlib
+        import io
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            mirror = root / 'mirror'
+            mirror.mkdir()
+            profile = root / 'filter-profiles.json'
+            profile.write_text('{}', encoding='utf-8')
+            orig_is_symlink = Path.is_symlink
+
+            err = io.StringIO()
+            with (
+                patch.object(sys, 'argv', ['generate_lists.py', '--check', '--mirror-root', str(mirror)]),
+                patch.object(Path, 'is_symlink', autospec=True, side_effect=lambda p: p == mirror or orig_is_symlink(p)),
+                contextlib.redirect_stderr(err),
+            ):
+                with self.assertRaises(SystemExit) as raised:
+                    generation.main()
+            self.assertEqual(raised.exception.code, 2)
+            self.assertIn('non-symlink directory', err.getvalue())
+
+            out = io.StringIO()
+            with (
+                patch.object(sys, 'argv', ['generate_lists.py', '--check']),
+                patch.object(generation, 'PROFILE_PATH', profile),
+                patch.object(Path, 'is_symlink', autospec=True, side_effect=lambda p: p == profile or orig_is_symlink(p)),
+                contextlib.redirect_stdout(out),
+            ):
+                self.assertEqual(generation.main(), 1)
+            self.assertIn('symlink profile or root is forbidden', out.getvalue())
 
 
 if __name__ == '__main__':

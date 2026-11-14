@@ -1,11 +1,7 @@
-# Optional engineering loop
+# Engineering Verification Loop
 
-[AGENTS.md](../AGENTS.md) contains general guidance. These are optional task steps, not another policy or an automatic work queue.
+Follow [../AGENTS.md](../AGENTS.md) for working boundaries and [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) for repository interfaces.
 
-1. Read the current request and affected source/tests. Consult [PROJECT_CONTEXT.md](PROJECT_CONTEXT.md) only for observed technical facts and available checks that relate to the task.
-2. Compare relevant current Git/GitHub state, test evidence and dependencies with the intended change.
-3. Make a focused, reviewable change on an isolated branch, run applicable tests and inspect actual CI results.
-4. Before merging a self-authored reversible PR, verify the current head, mergeability and all relevant required checks.
-5. Update [PROJECT_STATE.json](PROJECT_STATE.json) and [HANDOFF.md](HANDOFF.md) only for material new information; do not copy live SHAs or historical no-go status as active instructions.
-
-No fixed model/effort, reporting language, tool, environment path, test count, asset rule, or publication verdict is defined here. Product-specific facts are in the project context, not the shared rules.
+1. Inspect the request, `filter-profiles.json`, target filter/script files, and live Git/GitHub state.
+2. Make a minimal, focused edit on a branch. If `filter-profiles.json` changed, run `python scripts/generate_lists.py --write`.
+3. Run `python scripts/verify.py` (plus engine checks in CI or locally with Node.js 24 when modifying rules or engine scripts) and confirm all checks pass before merging.

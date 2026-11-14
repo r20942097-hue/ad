@@ -11,7 +11,7 @@ const {builtinScriptlets}=await import(pathToFileURL(path.join(engine,'node/js/r
 const parser=new AstFilterParser(), cosmetic=[],scripts=[];const resourceMap=new Map();
 for(const r of builtinScriptlets){resourceMap.set(r.name,r);for(const alias of r.aliases||[])resourceMap.set(alias,r)}
 for(const file of ['ad-ubo.txt','japanese-text-softener.txt','japanese-text-softener-deep.txt']){
- for(const rule of fs.readFileSync(path.join(root,file),'utf8').split('\n')){
+ for(const rule of fs.readFileSync(path.join(root,file),'utf8').split(/\r?\n/)){
   if(!rule||rule.startsWith('!')||rule.startsWith('['))continue;parser.parse(rule);
   if(parser.isScriptletFilter()){
    const args=parser.getScriptletArgs();const token=args[0].replace(/\.js$/,'')+'.js';const resource=resourceMap.get(token);const seen=new Set(),code=[];

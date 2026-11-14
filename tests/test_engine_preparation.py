@@ -26,7 +26,7 @@ class EnginePreparationTests(unittest.TestCase):
     def test_lock_rejects_unofficial_or_non_https_sources(self):
         for key, field, value in [('ublock', 'archive_url', 'file:///tmp/source'), ('public_suffix', 'url', 'https://example.org/psl'), ('ublock', 'commit', '../escape')]:
             with self.subTest(key=key, field=field):
-                lock = json.loads(prepare_engine.LOCK.read_text())
+                lock = json.loads(prepare_engine.LOCK.read_text(encoding='utf-8'))
                 lock[key][field] = value
                 with self.assertRaises(ValueError):
                     prepare_engine.validate_lock(lock)
@@ -35,9 +35,21 @@ class EnginePreparationTests(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / 'original').write_bytes(b'keep')
-            (root / 'cache').symlink_to('original')
+            cache = root / 'cache'
+            try:
+                cache.symlink_to('original')
+            except (OSError, NotImplementedError) as exc:
+                if not isinstance(exc, NotImplementedError) and getattr(exc, 'winerror', None) != 1314:
+                    raise
+                orig_is_symlink = Path.is_symlink
+                linked = {cache, cache.resolve()}
+                with patch.object(Path, 'is_symlink', autospec=True, side_effect=lambda p: p in linked or orig_is_symlink(p)):
+                    with self.assertRaisesRegex(ValueError, 'symlink'):
+                        prepare_engine.download('https://example.org/', '0' * 64, cache, 100)
+                self.assertEqual((root / 'original').read_bytes(), b'keep')
+                return
             with self.assertRaisesRegex(ValueError, 'symlink'):
-                prepare_engine.download('https://example.org/', '0' * 64, root / 'cache', 100)
+                prepare_engine.download('https://example.org/', '0' * 64, cache, 100)
             self.assertEqual((root / 'original').read_bytes(), b'keep')
 
     def test_verified_cache_does_not_use_network(self):
@@ -75,6 +87,42 @@ class EnginePreparationTests(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             source = prepare_engine.extract_snapshot(self.archive('uBlock-pinned/file'), Path(tmp), 'pinned')
             self.assertTrue((source / 'file').is_file())
+
+    def test_prepare_rejects_symlinked_engine_and_sources_directories(self):
+        import contextlib
+        import io
+        lock = json.loads(prepare_engine.LOCK.read_text(encoding='utf-8'))
+        with TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            engine_dir = root / 'engine'
+            orig_is_symlink = Path.is_symlink
+
+            with patch.object(Path, 'is_symlink', autospec=True, side_effect=lambda p: p == engine_dir or orig_is_symlink(p)):
+                with self.assertRaisesRegex(ValueError, 'must not be a symlink'):
+                    prepare_engine.prepare(engine_dir, lock)
+                err = io.StringIO()
+                with patch.object(sys, 'argv', ['prepare_engine.py', '--directory', str(engine_dir)]), contextlib.redirect_stderr(err):
+                    self.assertEqual(prepare_engine.main(), 1)
+                self.assertIn('must not be a symlink', err.getvalue())
+
+            sources_dir = engine_dir / 'sources'
+            with patch.object(Path, 'is_symlink', autospec=True, side_effect=lambda p: p == sources_dir or orig_is_symlink(p)):
+                with self.assertRaisesRegex(ValueError, 'must not be a symlink'):
+                    prepare_engine.prepare(engine_dir, lock)
+
+            manifest_path = engine_dir / 'manifest.json'
+            with patch.object(Path, 'is_symlink', autospec=True, side_effect=lambda p: p == manifest_path or orig_is_symlink(p)):
+                with self.assertRaisesRegex(ValueError, 'must not be a symlink'):
+                    prepare_engine.prepare(engine_dir, lock)
+
+            err = io.StringIO()
+            with (
+                patch.object(sys, 'argv', ['prepare_engine.py', '--directory', str(engine_dir)]),
+                patch.object(Path, 'is_symlink', autospec=True, side_effect=lambda p: p == prepare_engine.LOCK or orig_is_symlink(p)),
+                contextlib.redirect_stderr(err),
+            ):
+                self.assertEqual(prepare_engine.main(), 1)
+            self.assertIn('must not be a symlink', err.getvalue())
 
 
 if __name__ == '__main__':

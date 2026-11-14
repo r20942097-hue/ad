@@ -3,8 +3,9 @@
 # Fast local guard; CI remains the authority. Skip once with: git commit --no-verify
 set -uo pipefail
 root=$(git rev-parse --show-toplevel) && cd "$root" || exit 1
-export PATH="/workspace/tools/bin:$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 repo=$(basename "$(git config --get remote.origin.url 2>/dev/null)" .git)
+py=$(command -v python3 || command -v python || py -3 -c 'import pathlib,sys;print(pathlib.Path(sys.executable).as_posix())' 2>/dev/null || echo python3)
 mapfile -t files < <(git diff --cached --name-only --diff-filter=ACMR)
 [ ${#files[@]} -eq 0 ] && exit 0
 fail=0
@@ -19,7 +20,7 @@ if command -v gitleaks >/dev/null; then
   gitleaks git --staged --no-banner --redact --max-archive-depth 3 "${glcfg[@]}" -v -l warn . >/tmp/precommit_$$.log 2>&1 || { err "gitleaks found a possible secret"; grep -E 'Finding|File|Line|RuleID' /tmp/precommit_$$.log | head -20 >&2; }
 else echo "pre-commit: warn: gitleaks not found (CI still scans)" >&2; fi
 
-# 2. Public filter-source archive and large binary guard. Keep this repository-specific.
+# 2. Archives and large binaries (blocked by extension; this is the archive guard, no gitleaks path rule needed).
 # TypeScript (*.ts) is source code and must not be confused with MPEG transport streams.
 for f in "${files[@]}"; do
   case "${f,,}" in *.zip|*.7z|*.rar|*.crx|*.xpi|*.jar|*.apk|*.bundle|*.exe|*.dmg|*.tar|*.tgz|*.gz|*.xz|*.bz2|*.zst|*.mp4|*.sqlite|*.db) err "archive/binary file: $f";; esac
@@ -27,11 +28,11 @@ for f in "${files[@]}"; do
   [ "$size" -gt 1048576 ] && err "file over 1MB: $f ($size bytes)"
 done
 
-# 3. Public repo s: no personal add-on / RPLAY / StreamHarbor material.
-if [ "$repo" = s ]; then
+# 3. Public repo s/ad: no personal add-on / RPLAY / StreamHarbor material.
+if [ "$repo" = s ] || [ "$repo" = ad ]; then
   for f in "${files[@]}"; do
     [[ "$f" == .github/hooks/* ]] && continue
-    echo "$f" | grep -qiE 'rplay|streamharbor|addons_dev|\.user\.js$' && err "personal-only path not allowed in public s: $f"
+    echo "$f" | grep -qiE 'rplay|streamharbor|addons_dev|\.user\.js$' && err "personal-only path not allowed in public s/ad: $f"
   done
 fi
 
@@ -44,11 +45,11 @@ if [ ${#wf[@]} -gt 0 ]; then
 fi
 
 # 5. Repo fast checks (run on the working tree) when relevant files change.
-if [ "$repo" = s ]; then
+if [ "$repo" = s ] || [ "$repo" = ad ]; then
   if has '(^[^/]+\.txt$|^v2/|^filter-profiles\.json$|^scripts/|^tests/)'; then
-    run validate_lists python3 scripts/validate_lists.py
-    run generate_lists python3 scripts/generate_lists.py --check
-    [ -f scripts/check_subscription_contract.py ] && run subscription_contract python3 scripts/check_subscription_contract.py
+    run validate_lists "$py" scripts/validate_lists.py
+    run generate_lists "$py" scripts/generate_lists.py --check
+    [ -f scripts/check_subscription_contract.py ] && run subscription_contract "$py" scripts/check_subscription_contract.py
   fi
   # AGLint (MIT) on changed filter lists only; needs: npm ci --prefix verification/aglint
   mapfile -t fl < <(printf '%s\n' "${files[@]}" | grep -E '(^[^/]+|^v2/.+)\.txt$')
@@ -56,11 +57,19 @@ if [ "$repo" = s ]; then
     if [ -x verification/aglint/node_modules/.bin/aglint ]; then run aglint verification/aglint/node_modules/.bin/aglint --no-colors "${fl[@]}"
     else echo "pre-commit: warn: AGLint not installed (npm ci --prefix verification/aglint); CI still lints" >&2; fi
   fi
-  has '^(scripts|tests)/|^filter-profiles\.json$' && run unittest python3 -m unittest discover -s tests -p 'test_*.py'
-elif [ "$repo" = faaff ]; then
-  has '^ai/|^integrations/browser-filters/source/s/' && run check_hub python3 ai/check_hub.py
-  has '\.md$' && [ -f ai/check_docs.py ] && run check_docs python3 ai/check_docs.py
-  has '^ai/.*\.py$' && run ai_tests python3 -m unittest discover -s ai/tests -p 'test_*.py'
+  has '^(scripts|tests)/|^filter-profiles\.json$|^\.gitattributes$|^(AGENTS|CLAUDE)\.md$|^\.cursor/rules/agents\.mdc$|^\.github/(copilot-instructions\.md|pull_request_template\.md|ISSUE_TEMPLATE/ai-task\.yml|workflows/.*\.yml|hooks/pre-commit)$' && run unittest "$py" -m unittest discover -s tests -p 'test_*.py'
+elif [ "$repo" = faaff ] || [ "$repo" = 01 ]; then
+  has '^ai/|^integrations/browser-filters/source/s/' && run check_hub "$py" ai/check_hub.py
+  has '^browser_filter_lists/filters/|^integrations/browser-filters/source/s/' && run mirror_parity "$py" integrations/browser-filters/source/s/scripts/generate_lists.py --mirror-root . --check
+  has '\.mdc?$' && [ -f ai/check_docs.py ] && run check_docs "$py" ai/check_docs.py
+  has '^ai/|^\.gitattributes$|^(AGENTS|CLAUDE)\.md$|^\.cursor/rules/agents\.mdc$|^\.github/(copilot-instructions\.md|pull_request_template\.md|ISSUE_TEMPLATE/ai-task\.yml|workflows/.*\.yml|hooks/pre-commit)$' && run ai_tests "$py" -m unittest discover -s ai/tests -p 'test_*.py'
+  if has '^browser_filter_lists/'; then
+    run filter_tests "$py" -m unittest discover -s browser_filter_lists/scripts -p 'test_*.py'
+    run validate_filters "$py" browser_filter_lists/scripts/validate_filters.py
+    run candidate_evidence "$py" browser_filter_lists/scripts/validate_candidate_evidence.py
+    run candidate_promotion "$py" browser_filter_lists/scripts/validate_candidate_promotion.py
+    run candidate_report "$py" browser_filter_lists/scripts/render_candidate_report.py --check
+  fi
 fi
 rm -f /tmp/precommit_$$.log
 [ $fail -eq 0 ] || { echo "pre-commit: fix the above, or bypass once with --no-verify (CI will still check)." >&2; exit 1; }

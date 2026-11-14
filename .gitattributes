@@ -1,0 +1,8 @@
+# Normalize repository text files to LF across Windows, macOS, and Linux.
+* text=auto eol=lf
+
+# Keep shell scripts, Git hooks, filter lists, and JSON manifests LF-only across platforms.
+*.sh text eol=lf
+.github/hooks/* text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
