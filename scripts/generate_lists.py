@@ -217,6 +217,7 @@ def generate(data, roots, check=False, dry_run=False):
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
+    parser.add_argument('--write', action='store_true')
     parser.add_argument('--dry-run', action='store_true')
     parser.add_argument('--mirror-root', type=Path, help='explicit faaff checkout for compatibility exports')
     args = parser.parse_args(argv)
