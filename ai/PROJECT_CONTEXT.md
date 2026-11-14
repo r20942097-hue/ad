@@ -1,13 +1,13 @@
-# Current repository context — public s filters (not global instructions)
+# Current repository context — public ad filters (legacy s; not global instructions)
 
-This file describes today's technical interfaces and validation entrypoints. It is not a standing artifact-protection policy. Recheck the state when the user's task requires changing the product.
+This file describes technical interfaces and validation entrypoints **as observed**, not live GitHub status or a standing artifact-protection policy. Recheck the source and present task before changing the product.
 
 ## Existing interfaces and implementation
-- `s/main` currently publishes browser filter subscriptions over public `raw.githubusercontent.com` paths. Changes to those paths can affect downstream subscribers; [scripts/check_subscription_contract.py](../scripts/check_subscription_contract.py) reports the present compatibility contract.
+- [`r20942097-hue/ad`](https://github.com/r20942097-hue/ad) is the current public filter-source repository (legacy name `s`). Existing `raw.githubusercontent.com/r20942097-hue/s/main/` subscription URLs remain compatibility interfaces and must not be casually renamed. [scripts/check_subscription_contract.py](../scripts/check_subscription_contract.py) validates the actual URL contract; query current GitHub for the live HEAD.
 - `filter-profiles.json` is the generator input for `ad.txt`, `tracking.txt`, `v2/ad.txt`, `v2/tracking.txt`, and `v2/strict.txt`; [scripts/generate_lists.py](../scripts/generate_lists.py) checks the generated output. Other filter lists have separate source ownership.
 - Current list/license information is in the list headers, not in the general agent policy. Compatibility or migration decisions follow the specific user request and verified integration effects.
-- Private `r20942097-hue/faaff` tracks an `s` source snapshot through its `ai/imports/s.json` manifest. Its `refresh-pinned-s.yml` workflow checks weekly and proposes a private PR only when imported file content changes; excluded-only metadata and agent documents do not trigger a repin. It does not automatically merge.
-- The public `s` repo is not an addon source or build-artifact repository. Its contents should be evaluated as this product's current implementation, not as a global ban on developing other projects.
+- Private [`r20942097-hue/01`](https://github.com/r20942097-hue/01) (legacy `faaff`) tracks an `s`-identified pinned snapshot through its `ai/imports/s.json` manifest. Its `refresh-pinned-s.yml` checks periodically and can propose a separate PR when imported content changes; inspect the live workflow and manifest instead of assuming an automatic merge or a current commit from this description.
+- This public `ad` repository is a filter-list product, not the runtime source of unrelated addons. Its current content and tests are evidence for this product only; they do not establish global restrictions on other projects.
 
 ## Verification entrypoints
 - `python -m unittest discover -s tests -p 'test_*.py' -v`

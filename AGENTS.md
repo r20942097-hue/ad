@@ -1,4 +1,4 @@
-# Working guidance — s
+# Working guidance — ad (legacy identifier: s)
 
 ## Current principles
 
