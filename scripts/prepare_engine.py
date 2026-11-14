@@ -39,7 +39,7 @@ def extract_snapshot(content, directory, commit):
                     or path.parts[0] != expected or member.issym() or member.islnk()
                     or not (member.isdir() or member.isfile())):
                 raise ValueError('unsafe archive member')
-        archive.extractall(directory, filter='data')
+        archive.extractall(directory, filter='data') if hasattr(tarfile, 'data_filter') else archive.extractall(directory)
     return directory / expected
 
 

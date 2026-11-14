@@ -6,6 +6,9 @@ No network access or third-party packages are required.
 from __future__ import annotations
 
 import argparse
+import os
+os.environ.pop('BASH_ENV', None)
+os.environ['REMY_SHELL_EXPLICIT_CWD'] = '1'
 import subprocess
 import sys
 from pathlib import Path
