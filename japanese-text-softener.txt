@@ -1,7 +1,7 @@
 [Adblock Plus 2.0]
 ! Title: Japanese Text Softener
 ! Title-ja: 日本語本文軟化
-! Version: 20261011.1
+! Version: 20261115.1
 ! Expires: 7 days
 ! Homepage: https://github.com/r20942097-hue/s
 ! Subscription: https://raw.githubusercontent.com/r20942097-hue/s/main/japanese-text-softener.txt

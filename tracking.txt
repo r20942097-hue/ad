@@ -1,6 +1,6 @@
 [Adblock Plus 2.0]
 ! Title: Universal Web Tracking Filter (Optional)
-! Version: 20261011.1
+! Version: 20261115.1
 ! Expires: 5 days
 ! Homepage: https://github.com/r20942097-hue/s
 ! Subscription: https://raw.githubusercontent.com/r20942097-hue/s/main/tracking.txt

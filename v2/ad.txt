@@ -1,13 +1,13 @@
 [Adblock Plus 2.0]
 ! Title: Universal Web Ad Filter v2 (Global Balanced)
-! Version: 20261011.1
+! Version: 20261115.1
 ! Expires: 5 days
 ! Homepage: https://github.com/r20942097-hue/s
 ! Subscription: https://raw.githubusercontent.com/r20942097-hue/s/main/v2/ad.txt
 ! Description: Global third-party advertising-network supplement, curated for low breakage.
 ! Policy: Third-party network blocking only. No broad cosmetic filters, first-party blocking, anti-adblock bypass, paywall bypass, or URL rewriting.
 ! Compatibility: uBlock Origin / AdGuard / ABP-compatible syntax where supported.
-! Last reviewed: 2026-10-11
+! Last reviewed: 2026-11-15
 ! Sources reviewed: EasyList, EasyPrivacy policy, AdGuard Base/Regional filters, uBlock Origin uAssets.
 ! License: GPL-3.0-only
 ! Generated: filter-profiles.json via scripts/generate_lists.py

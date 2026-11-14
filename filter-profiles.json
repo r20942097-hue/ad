@@ -1,7 +1,7 @@
 {
   "schema": "filter-profiles/v1",
-  "version": "20261011.1",
-  "reviewed_at": "2026-10-11",
+  "version": "20261115.1",
+  "reviewed_at": "2026-11-15",
   "notes": "Common rules are generated into existing subscription paths. No upstream candidates are automatically promoted. v2 remains candidate; broad SDK domains are isolated in Strict.",
   "rule_sets": {
     "ads-core": {
