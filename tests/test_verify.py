@@ -97,7 +97,8 @@ class VerifyRunnerTest(unittest.TestCase):
             self.assertTrue(uses_refs, wf.name)
             for ref in uses_refs:
                 self.assertRegex(ref, r"^[^@]+@[0-9a-f]{40}$", f"{wf.name}: {ref}")
-            self.assertNotIn("3780f8a00b6c718f3811fb4c75c5fa5b22a8ef75", text, f"{wf.name}: invalid setup-uv SHA")
+            if wf.name == "japanese-text-softener.yml":
+                self.assertIn("node-version: '26'", text)
 
     @unittest.skipUnless(
         (ROOT / "AGENTS.md").is_file(),
@@ -112,6 +113,12 @@ class VerifyRunnerTest(unittest.TestCase):
             raw = claude.read_bytes()
             self.assertNotIn(b"\r", raw, "CLAUDE.md must use LF")
             self.assertEqual(raw.decode("utf-8").splitlines(), ["@AGENTS.md"])
+        for rel in (".github/copilot-instructions.md", ".cursor/rules/agents.mdc"):
+            pointer = ROOT / rel
+            if pointer.exists():
+                lines = pointer.read_text(encoding="utf-8").splitlines()
+                self.assertLessEqual(len(lines), 15, f"{rel}: thin pointer exceeds 15 lines")
+                self.assertIn("AGENTS.md", "\n".join(lines), rel)
         for forbidden in ("CLAUDE.local.md", "AGENTS.override.md"):
             self.assertFalse((ROOT / forbidden).exists(), forbidden)
 

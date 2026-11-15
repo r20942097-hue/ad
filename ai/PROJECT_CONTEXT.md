@@ -23,7 +23,7 @@ Public `raw.githubusercontent.com/r20942097-hue/s/main/` URLs remain an existing
   - `python scripts/validate_lists.py`
   - `python scripts/generate_lists.py --check`
   - `python scripts/check_subscription_contract.py --json`
-- **Optional engine / upstream checks (Node.js 24 + first-time fetch)**:
+- **Optional engine / upstream checks (Node.js 26 Active LTS + first-time fetch)**:
   - `python scripts/prepare_engine.py --directory ../work/filter-engine`
   - `node scripts/check_engine.mjs --engine-dir ../work/filter-engine`
   - `python scripts/audit_upstream.py --cache ../work/upstream-audit --fetch --report ../work/upstream-audit.json`
