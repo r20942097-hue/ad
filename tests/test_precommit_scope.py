@@ -107,6 +107,15 @@ class PublicPreCommitScopeTests(unittest.TestCase):
         for ref in ("[CLAUDE.md](CLAUDE.md)", "[.cursor/rules/agents.mdc](.cursor/rules/agents.mdc)", "[.github/copilot-instructions.md](.github/copilot-instructions.md)"):
             self.assertIn(ref, agents)
 
+        self.assertLessEqual(len(agents.splitlines()), 100)
+        self.assertLessEqual(len(agents.encode("utf-8")), 24576)
+        self.assertFalse((ROOT / "CLAUDE.local.md").exists())
+        self.assertFalse((ROOT / "AGENTS.override.md").exists())
+
+        claude_lines = [ln.strip() for ln in (ROOT / "CLAUDE.md").read_text(encoding="utf-8").splitlines()]
+        self.assertIn("@AGENTS.md", claude_lines)
+        self.assertLessEqual(len(claude_lines), 6)
+
         for rel in ("CLAUDE.md", ".cursor/rules/agents.mdc", ".github/copilot-instructions.md"):
             content = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("AGENTS.md", content)
