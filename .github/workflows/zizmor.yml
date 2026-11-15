@@ -1,0 +1,36 @@
+name: GitHub Actions Security Audit (zizmor)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/**"
+  pull_request:
+    paths:
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: zizmor-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  zizmor:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ZIZMOR_VERSION: "1.32.0"
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@3780f8a00b6c718f3811fb4c75c5fa5b22a8ef75 # v10.3.3
+
+      - name: Run zizmor offline audit
+        run: uvx "zizmor==${ZIZMOR_VERSION}" --offline --format=github .github/workflows

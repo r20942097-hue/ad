@@ -50,6 +50,7 @@ class PublicPreCommitScopeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             subprocess.run(["git", "init", "-q", str(root)], check=True)
+            subprocess.run(["git", "-C", str(root), "config", "core.autocrlf", "false"], check=True)
             subprocess.run(
                 ["git", "-C", str(root), "remote", "add", "origin", origin],
                 check=True,

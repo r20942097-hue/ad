@@ -27,4 +27,4 @@ Public `raw.githubusercontent.com/r20942097-hue/s/main/` URLs remain an existing
   - `python scripts/prepare_engine.py --directory ../work/filter-engine`
   - `node scripts/check_engine.mjs --engine-dir ../work/filter-engine`
   - `python scripts/audit_upstream.py --cache ../work/upstream-audit --fetch --report ../work/upstream-audit.json`
-- **CI workflows**: `.github/workflows/japanese-text-softener.yml` and `.github/workflows/codeql.yml`.
+- **CI workflows**: `.github/workflows/japanese-text-softener.yml`, `.github/workflows/codeql.yml`, and `.github/workflows/zizmor.yml`.

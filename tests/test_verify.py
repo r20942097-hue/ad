@@ -54,7 +54,7 @@ class VerifyRunnerTest(unittest.TestCase):
         self.assertIn(f"{len(verify.CHECKS)}/{len(verify.CHECKS)} checks passed", out.getvalue())
 
         fail_out = io.StringIO()
-        side_effects = [True, False, True, True][:len(verify.CHECKS)]
+        side_effects = [i != 1 for i in range(len(verify.CHECKS))]
         with patch.object(verify, "run_check", side_effect=side_effects), contextlib.redirect_stdout(fail_out):
             fail_rc = verify.main([])
         self.assertEqual(fail_rc, 1)
@@ -69,6 +69,33 @@ class VerifyRunnerTest(unittest.TestCase):
             sym_rc = verify.main([])
         self.assertEqual(sym_rc, 1)
         self.assertIn("repository root must not be a symlink", err_out.getvalue())
+
+
+    def test_generate_lists_accepts_write_flag(self) -> None:
+        completed = verify.subprocess.run(
+            [sys.executable, "scripts/generate_lists.py", "--write", "--dry-run"],
+            cwd=ROOT, capture_output=True, text=True, check=False,
+        )
+        self.assertEqual(completed.returncode, 2)
+        completed_ok = verify.subprocess.run(
+            [sys.executable, "scripts/generate_lists.py", "--write"],
+            cwd=ROOT, capture_output=True, text=True, encoding="utf-8", check=False,
+        )
+        self.assertEqual(completed_ok.returncode, 0)
+        self.assertIn("GENERATION PASSED", completed_ok.stdout)
+
+    def test_workflows_pin_actions_and_restrict_tokens(self) -> None:
+        import re
+        workflows = sorted((ROOT / ".github" / "workflows").glob("*.yml"))
+        self.assertGreaterEqual(len(workflows), 3)
+        for wf in workflows:
+            text = wf.read_text(encoding="utf-8")
+            self.assertIn("permissions:\n  contents: read", text, wf.name)
+            self.assertIn("persist-credentials: false", text, wf.name)
+            uses_refs = re.findall(r"uses:\s*([^\s#]+)", text)
+            self.assertTrue(uses_refs, wf.name)
+            for ref in uses_refs:
+                self.assertRegex(ref, r"^[^@]+@[0-9a-f]{40}$", f"{wf.name}: {ref}")
 
 
 if __name__ == "__main__":
