@@ -32,9 +32,9 @@ class GenerationTests(unittest.TestCase):
                     else:
                         data['outputs'][0]['headers'].append('! Note: ' + injected)
                     root = Path(tmp)
-                    (root / 'ad.txt').write_text('keep')
+                    (root / 'ad.txt').write_text('keep', encoding='utf-8')
                     self.assertTrue(generation.generate(data, {'s': root}))
-                    self.assertEqual((root / 'ad.txt').read_text(), 'keep')
+                    self.assertEqual((root / 'ad.txt').read_text(encoding='utf-8'), 'keep')
 
     def test_rule_paths_cannot_inject_a_second_line_or_controls(self):
         for separator in ['\n', '\r', '\t', '\0', '\x7f', '\x80', '\x85', '\x9f', '\u2028', '\u2029']:
@@ -42,9 +42,9 @@ class GenerationTests(unittest.TestCase):
                 data = copy.deepcopy(self.data)
                 data['rule_sets']['ads-core']['rules'][0] = '||doubleclick.net/path' + separator + '||unreviewed.example^$third-party'
                 root = Path(tmp)
-                (root / 'ad.txt').write_text('keep')
+                (root / 'ad.txt').write_text('keep', encoding='utf-8')
                 self.assertTrue(generation.generate(data, {'s':root}))
-                self.assertEqual((root / 'ad.txt').read_text(), 'keep')
+                self.assertEqual((root / 'ad.txt').read_text(encoding='utf-8'), 'keep')
                 self.assertEqual(len(list(root.iterdir())), 1)
 
     def test_c1_controls_are_invalid_in_labels_and_headers(self):
@@ -70,9 +70,9 @@ class GenerationTests(unittest.TestCase):
                     else:
                         data['rule_sets']['privacy-core']['rules'][0] = '||example.test/path' + character + '$third-party'
                     root = Path(tmp)
-                    (root / 'ad.txt').write_text('keep')
+                    (root / 'ad.txt').write_text('keep', encoding='utf-8')
                     self.assertTrue(generation.generate(data, {'s':root}))
-                    self.assertEqual((root / 'ad.txt').read_text(), 'keep')
+                    self.assertEqual((root / 'ad.txt').read_text(encoding='utf-8'), 'keep')
                     self.assertEqual(len(list(root.iterdir())), 1)
 
     def test_components_over_255_characters_are_rejected_before_writes(self):
@@ -83,9 +83,9 @@ class GenerationTests(unittest.TestCase):
                 data['outputs'][-1]['scope'] = 's'
                 data['outputs'][-1]['path'] = path
                 root = Path(tmp)
-                (root / 'ad.txt').write_text('keep')
+                (root / 'ad.txt').write_text('keep', encoding='utf-8')
                 self.assertTrue(generation.generate(data, {'s':root}))
-                self.assertEqual((root / 'ad.txt').read_text(), 'keep')
+                self.assertEqual((root / 'ad.txt').read_text(encoding='utf-8'), 'keep')
                 self.assertEqual(len(list(root.iterdir())), 1)
         data = copy.deepcopy(self.data)
         data['outputs'][0]['includes'] = ['a'*252+'.txt']
@@ -109,23 +109,23 @@ class GenerationTests(unittest.TestCase):
                 output['path'] = path
                 data['outputs'].append(output)
                 root = Path(tmp)
-                (root / 'ad.txt').write_text('keep')
+                (root / 'ad.txt').write_text('keep', encoding='utf-8')
                 errors = generation.generate(data, {'s': root})
                 self.assertTrue(any('conflicting' in error for error in errors))
-                self.assertEqual((root / 'ad.txt').read_text(), 'keep')
+                self.assertEqual((root / 'ad.txt').read_text(encoding='utf-8'), 'keep')
 
     def test_existing_path_conflicts_are_detected_before_any_output_is_written(self):
         for conflict in ['parent-file', 'target-directory']:
             with self.subTest(conflict=conflict), TemporaryDirectory() as tmp:
                 root = Path(tmp)
-                (root / 'ad.txt').write_text('keep')
+                (root / 'ad.txt').write_text('keep', encoding='utf-8')
                 if conflict == 'parent-file':
-                    (root / 'v2').write_text('keep parent')
+                    (root / 'v2').write_text('keep parent', encoding='utf-8')
                 else:
                     (root / 'v2/ad.txt').mkdir(parents=True)
                 with self.assertRaisesRegex(ValueError, 'not a regular'):
                     generation.generate(self.data, {'s': root})
-                self.assertEqual((root / 'ad.txt').read_text(), 'keep')
+                self.assertEqual((root / 'ad.txt').read_text(encoding='utf-8'), 'keep')
                 self.assertFalse((root / 'tracking.txt').exists())
 
     def test_scope_and_hostname_types_are_validation_errors(self):
@@ -175,10 +175,10 @@ class GenerationTests(unittest.TestCase):
     def test_bad_profile_does_not_modify_outputs(self):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
-            (root / 'ad.txt').write_text('keep')
+            (root / 'ad.txt').write_text('keep', encoding='utf-8')
             self.data['outputs'][0]['path'] = '../outside.txt'
             self.assertTrue(generation.generate(self.data, {'s': root}))
-            self.assertEqual((root / 'ad.txt').read_text(), 'keep')
+            self.assertEqual((root / 'ad.txt').read_text(encoding='utf-8'), 'keep')
 
     def test_mirror_is_not_written_without_explicit_root(self):
         with TemporaryDirectory() as tmp:
@@ -211,7 +211,7 @@ class GenerationTests(unittest.TestCase):
         with TemporaryDirectory() as tmp:
             root = Path(tmp)
             generation.generate(self.data, {'s': root})
-            (root / 'ad.txt').write_text('stale')
+            (root / 'ad.txt').write_text('stale', encoding='utf-8')
             errors = generation.generate(self.data, {'s': root}, check=True)
             self.assertTrue(any('stale generated' in error for error in errors))
 

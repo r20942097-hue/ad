@@ -52,7 +52,7 @@ class SubscriptionContractTests(unittest.TestCase):
 
     def test_subscription_url_change_rejected(self):
         p = self.root / "ad.txt"
-        p.write_text(p.read_text().replace(BASE, "https://example.com/"))
+        p.write_text(p.read_text(encoding="utf-8").replace(BASE, "https://example.com/"), encoding="utf-8")
         self.assertIn("missing or changed subscription URL metadata", check_path(self.root, "ad.txt"))
 
     def test_required_subscription_header_removed(self):
@@ -71,7 +71,7 @@ class SubscriptionContractTests(unittest.TestCase):
 
     def test_bad_adblock_header(self):
         p = self.root / "ad.txt"
-        p.write_text(p.read_text().replace("[Adblock Plus 2.0]", "[Other]"))
+        p.write_text(p.read_text(encoding="utf-8").replace("[Adblock Plus 2.0]", "[Other]"), encoding="utf-8")
         self.assertIn("missing Adblock Plus header", check_path(self.root, "ad.txt"))
 
     def test_linked_public_file(self):
@@ -107,7 +107,7 @@ class SubscriptionContractTests(unittest.TestCase):
 
     def test_duplicate_license(self):
         p = self.root / "ad.txt"
-        p.write_text(p.read_text() + "! License: CC0-1.0\n")
+        p.write_text(p.read_text(encoding="utf-8") + "! License: CC0-1.0\n", encoding="utf-8")
         self.assertIn("license metadata mismatch", check_path(self.root, "ad.txt"))
 
     def test_cli_good(self):

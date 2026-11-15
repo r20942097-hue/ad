@@ -74,7 +74,7 @@ class VerifyRunnerTest(unittest.TestCase):
     def test_generate_lists_accepts_write_flag(self) -> None:
         completed = verify.subprocess.run(
             [sys.executable, "scripts/generate_lists.py", "--write", "--dry-run"],
-            cwd=ROOT, capture_output=True, text=True, check=False,
+            cwd=ROOT, capture_output=True, text=True, encoding="utf-8", check=False,
         )
         self.assertEqual(completed.returncode, 2)
         completed_ok = verify.subprocess.run(
@@ -97,6 +97,30 @@ class VerifyRunnerTest(unittest.TestCase):
             self.assertTrue(uses_refs, wf.name)
             for ref in uses_refs:
                 self.assertRegex(ref, r"^[^@]+@[0-9a-f]{40}$", f"{wf.name}: {ref}")
+
+
+    def test_scripts_and_tests_specify_utf8_encoding_explicitly(self) -> None:
+        import ast
+
+        missing: list[str] = []
+        for directory in ("scripts", "tests"):
+            for path in sorted((ROOT / directory).rglob("*.py")):
+                tree = ast.parse(path.read_text(encoding="utf-8"), str(path))
+                for node in ast.walk(tree):
+                    if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
+                        continue
+                    kws = {k.arg: k.value for k in node.keywords}
+                    if node.func.attr in ("read_text", "write_text") and "encoding" not in kws:
+                        missing.append(f"{path.relative_to(ROOT)}:{node.lineno} {node.func.attr}()")
+                    if (
+                        isinstance(node.func.value, ast.Name)
+                        and node.func.value.id == "subprocess"
+                        and node.func.attr == "run"
+                        and ("text" in kws or "universal_newlines" in kws)
+                        and "encoding" not in kws
+                    ):
+                        missing.append(f"{path.relative_to(ROOT)}:{node.lineno} subprocess.run(text=True)")
+        self.assertEqual(missing, [], f"Missing explicit encoding=: {missing}")
 
 
 if __name__ == "__main__":

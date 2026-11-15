@@ -50,7 +50,10 @@ class PublicPreCommitScopeTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             subprocess.run(["git", "init", "-q", str(root)], check=True)
-            subprocess.run(["git", "-C", str(root), "config", "core.autocrlf", "false"], check=True)
+            subprocess.run(
+                ["git", "-C", str(root), "config", "core.autocrlf", "false"],
+                check=True,
+            )
             subprocess.run(
                 ["git", "-C", str(root), "remote", "add", "origin", origin],
                 check=True,
@@ -114,10 +117,9 @@ class PublicPreCommitScopeTests(unittest.TestCase):
         self.assertFalse((ROOT / "AGENTS.override.md").exists())
 
         claude_lines = [ln.strip() for ln in (ROOT / "CLAUDE.md").read_text(encoding="utf-8").splitlines()]
-        self.assertIn("@AGENTS.md", claude_lines)
-        self.assertLessEqual(len(claude_lines), 6)
+        self.assertEqual(claude_lines, ["@AGENTS.md"])
 
-        for rel in ("CLAUDE.md", ".cursor/rules/agents.mdc", ".github/copilot-instructions.md"):
+        for rel in (".cursor/rules/agents.mdc", ".github/copilot-instructions.md"):
             content = (ROOT / rel).read_text(encoding="utf-8")
             self.assertIn("AGENTS.md", content)
             self.assertIn("No separate rules here.", content)
