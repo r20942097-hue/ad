@@ -97,6 +97,23 @@ class VerifyRunnerTest(unittest.TestCase):
             self.assertTrue(uses_refs, wf.name)
             for ref in uses_refs:
                 self.assertRegex(ref, r"^[^@]+@[0-9a-f]{40}$", f"{wf.name}: {ref}")
+            self.assertNotIn("3780f8a00b6c718f3811fb4c75c5fa5b22a8ef75", text, f"{wf.name}: invalid setup-uv SHA")
+
+    @unittest.skipUnless(
+        (ROOT / "AGENTS.md").is_file(),
+        "instruction files are intentionally excluded from the downstream pinned source copy",
+    )
+    def test_instruction_hygiene_and_strict_claude_pointer(self) -> None:
+        agents = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        self.assertLessEqual(len(agents.splitlines()), 100)
+        self.assertLessEqual(len(agents.encode("utf-8")), 24576)
+        claude = ROOT / "CLAUDE.md"
+        if claude.exists():
+            raw = claude.read_bytes()
+            self.assertNotIn(b"\r", raw, "CLAUDE.md must use LF")
+            self.assertEqual(raw.decode("utf-8").splitlines(), ["@AGENTS.md"])
+        for forbidden in ("CLAUDE.local.md", "AGENTS.override.md"):
+            self.assertFalse((ROOT / forbidden).exists(), forbidden)
 
 
     def test_scripts_and_tests_specify_utf8_encoding_explicitly(self) -> None:
